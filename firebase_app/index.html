@@ -6,7 +6,7 @@
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
     <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TEST123</title>
+    <title>Password Streaking</title>
   </head>
   <style type="text/css">
     body{
@@ -16,23 +16,31 @@
         margin: 0 auto;
         padding: 50px;
         height: 400px;
-        background: white;
+        display: table;
+        overflow-x: auto;
+    }
+    .pure-table{
+      background: white;
+    }
+    a{
+      text-decoration: none;
+    }
+    a:hover{
+      text-decoration:  underline;
     }
     footer{
-        position: absolute;
         bottom: 15px;
         width: 100%;
         text-align: center;
-        border:-top : 2px dotted gray;
-        margin:-top: 50px;
+        margin-top: 10px;
     }
   </style>
   <body>
     <center><h1>{ Can I get your pwd? }</h1></center>
     <center><img src="static/images/separation573.gif"></center>
-    <center><h3>There are {} pairs in this list now.</h3></center>
-
-    <table class="pure-table table-container">
+    <center><h3>There are <span class='count-num'></span> pairs in this list now.</h3></center>
+    <div class="table-container">
+    <table class="pure-table">
         <thead>
             <tr>
                 <th>#</th>
@@ -40,36 +48,37 @@
                 <th>Password</th>
                 <th>Src</th>
                 <th>Dest</th>
+                <th>protocol</th>
             </tr>
         </thead>
         <tbody  id='pwd-wall'>
         </tbody>
-    </table><br/>
+    </table>
+    </div>
+    <!-- Place this tag right after the last button or just before your close body tag. -->
+    <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
 
-
-    <footer> John Lin is loving to hack @ 2015 :)</footer>
-
-    <center style="display: none;">
-        <input type='text' id='nameInput' placeholder='Name'>
-        <input type='text' id='messageInput' placeholder='Message'>
-    </center>
-
+  
+    <footer> John is loving to hack @ 2015 :)<br/><a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
+    <a class="github-button" href="https://github.com/John-Lin" data-style="mega">Follow @John-Lin</a> 
+    <a class="github-button" href="https://github.com/lockys" data-style="mega">Follow @lockys</a> 
+    </footer>
     <script>
-      var myDataRef = new Firebase('https://xj1lquc74c5.firebaseio-demo.com/');
-      $('#messageInput').keypress(function (e) {
-        if (e.keyCode == 13) {
-          var name = $('#pwd-wall').val();
-          var text = $('#messageInput').val();
-          myDataRef.push({name: name, text: text});
-          $('#messageInput').val('');
-        }
-      });
+      var myDataRef = new Firebase('https://amber-inferno-5029.firebaseio.com/pwd_table');
+
       myDataRef.on('child_added', function(snapshot) {
         var message = snapshot.val();
-        displayChatMessage(message.name, message.text);
+        console.log(snapshot.numChildren());
+        console.log(message);
+        displayPairs(message.app, message.client, message.login, message.password, message.server);
       });
-      function displayChatMessage(name, text) {
-        $('<tr/>').text('').prepend($('<td/>').text('--')).prepend($('<td/>').text('--')).prepend($('<td/>').text(text)).prepend($('<td/>').text(name)).prepend($('<td/>').text('--')).appendTo($('#pwd-wall'));
+
+      myDataRef.on("value", function(snapshot) {
+        $('.count-num').html(snapshot.numChildren());
+      });
+
+      function displayPairs(app, client, login, pwd, server) {
+        $('<tr/>').text('').prepend($('<td/>').text(app)).prepend($('<td/>').text(server)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prepend($('<td/>').text('--')).prependTo($('#pwd-wall'));
         $('#pwd-wall')[0].scrollTop = $('#pwd-wall')[0].scrollHeight;
       };
     </script>
