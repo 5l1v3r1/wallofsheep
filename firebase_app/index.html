@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!doctype html>
+<html>
+  <head>
+    <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TEST123</title>
+  </head>
+  <style type="text/css">
+    body{
+        background-image: url('static/images/geometry2.png');
+    }
+    .table-container{
+        margin: 0 auto;
+        padding: 50px;
+        height: 400px;
+        background: white;
+    }
+    footer{
+        position: absolute;
+        bottom: 15px;
+        width: 100%;
+        text-align: center;
+        border:-top : 2px dotted gray;
+        margin:-top: 50px;
+    }
+  </style>
+  <body>
+    <center><h1>{ Can I get your pwd? }</h1></center>
+    <center><img src="static/images/separation573.gif"></center>
+    <center><h3>There are {} pairs in this list now.</h3></center>
+
+    <table class="pure-table table-container">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Account</th>
+                <th>Password</th>
+                <th>Src</th>
+                <th>Dest</th>
+            </tr>
+        </thead>
+        <tbody  id='pwd-wall'>
+        </tbody>
+    </table><br/>
+
+
+    <footer> John Lin is loving to hack @ 2015 :)</footer>
+
+    <center style="display: none;">
+        <input type='text' id='nameInput' placeholder='Name'>
+        <input type='text' id='messageInput' placeholder='Message'>
+    </center>
+
+    <script>
+      var myDataRef = new Firebase('https://xj1lquc74c5.firebaseio-demo.com/');
+      $('#messageInput').keypress(function (e) {
+        if (e.keyCode == 13) {
+          var name = $('#pwd-wall').val();
+          var text = $('#messageInput').val();
+          myDataRef.push({name: name, text: text});
+          $('#messageInput').val('');
+        }
+      });
+      myDataRef.on('child_added', function(snapshot) {
+        var message = snapshot.val();
+        displayChatMessage(message.name, message.text);
+      });
+      function displayChatMessage(name, text) {
+        $('<tr/>').text('').prepend($('<td/>').text('--')).prepend($('<td/>').text('--')).prepend($('<td/>').text(text)).prepend($('<td/>').text(name)).prepend($('<td/>').text('--')).appendTo($('#pwd-wall'));
+        $('#pwd-wall')[0].scrollTop = $('#pwd-wall')[0].scrollHeight;
+      };
+    </script>
+  </body>
+</html>
