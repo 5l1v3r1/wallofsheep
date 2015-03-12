@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!doctype html>
 <html>
   <head>
     <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
@@ -11,7 +10,30 @@
   <style type="text/css">
     body{
         background-image: url('static/images/geometry2.png');
+        position: relative;
     }
+
+    a{
+      text-decoration: none;
+    }
+    
+    a:hover{
+      text-decoration:  underline;
+    }
+    
+    .sheep{
+      position: absolute;
+      top:0;
+      right:20px;
+      width: 250px;
+    }
+    
+    .wolf{
+      position: absolute;
+      top:0;
+      left:60px;
+    }
+
     .table-container{
         margin: 0 auto;
         padding: 50px;
@@ -19,15 +41,11 @@
         display: table;
         overflow-x: auto;
     }
+    
     .pure-table{
       background: white;
     }
-    a{
-      text-decoration: none;
-    }
-    a:hover{
-      text-decoration:  underline;
-    }
+   
     footer{
         bottom: 15px;
         width: 100%;
@@ -35,10 +53,13 @@
         margin-top: 10px;
     }
   </style>
+  
   <body>
-    <center><h1>{ Can I get your pwd? }</h1></center>
-    <center><img src="static/images/separation573.gif"></center>
-    <center><h3>There are <span class='count-num'></span> pairs in this list now.</h3></center>
+    <img class="wolf" src="static/images/wolf-in-sheeps-clothing.png">
+    <img class="sheep" src="http://www.clipartbest.com/cliparts/aTe/pGE/aTepGE5T4.png">
+    <center><h1>{ Can I get your pa**word? }</h1></center>
+    <!-- <center><img src="static/images/separation573.gif"></center> -->
+    <center><h3>We have captured <span class='count-num'></span> sheep for dinner now.</h3></center>
     <div class="table-container">
     <table class="pure-table">
         <thead>
@@ -46,9 +67,9 @@
                 <th>#</th>
                 <th>Account</th>
                 <th>Password</th>
-                <th>Src</th>
-                <th>Dest</th>
-                <th>protocol</th>
+                <th>Client</th>
+                <th>Server</th>
+                <th>Protocol</th>
             </tr>
         </thead>
         <tbody  id='pwd-wall'>
@@ -57,9 +78,7 @@
     </div>
     <!-- Place this tag right after the last button or just before your close body tag. -->
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
-
-  
-    <footer> John is loving to hack @ 2015 :)<br/><a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
+    <footer>  Networking Experiment @ 2015<br/><br/><a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
     <a class="github-button" href="https://github.com/John-Lin" data-style="mega">Follow @John-Lin</a> 
     <a class="github-button" href="https://github.com/lockys" data-style="mega">Follow @lockys</a> 
     </footer>
@@ -67,10 +86,15 @@
       var myDataRef = new Firebase('https://amber-inferno-5029.firebaseio.com/pwd_table');
 
       myDataRef.on('child_added', function(snapshot) {
-        var message = snapshot.val();
-        console.log(snapshot.numChildren());
-        console.log(message);
-        displayPairs(message.app, message.client, message.login, message.password, message.server);
+        var message = snapshot.val()
+            ,pwdStr = message.password
+            ,pwdLength = pwdStr.length
+            ,star='';
+
+        for(var i = 0 ; i < pwdLength/3+1 ; i++)star += '*';
+
+        pwdStr = pwdStr.substring(0,pwdLength/3) + star + pwdStr.substring(pwdLength*2/3, pwdLength);
+        displayPairs(message.app, message.client, message.login, pwdStr, message.server);
       });
 
       myDataRef.on("value", function(snapshot) {
