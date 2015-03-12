@@ -5,15 +5,16 @@ import socket
 import urlparse
 from firebase import firebase
 from pprint import pprint
+import settings
 
 APP_TO_PORT = {80: 'http'}
-FIREBASE_URL = "https://amber-inferno-5029.firebaseio.com"
 
 
 class Sniffer(object):
     def __init__(self, protocol='HTTP', interface=None):
 
-        self._firebase = firebase.FirebaseApplication(FIREBASE_URL, None)
+        self._firebase = firebase.FirebaseApplication(settings.FIREBASE_URL,
+                                                      None)
         self.protocol = protocol
         if self.protocol == 'HTTP':
             pattern = 'tcp and dst port 80'
