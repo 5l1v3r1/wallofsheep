@@ -3,7 +3,7 @@
   <head>
     <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
-    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="static/pure.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Password Streaking</title>
   </head>
@@ -20,6 +20,14 @@
     a:hover{
       text-decoration:  underline;
     }
+
+    .bg-red{
+      background: red;
+    }
+
+    .bg-green{
+      background: #80FF00 !important;
+    }
     
     .sheep{
       position: absolute;
@@ -31,21 +39,53 @@
     .wolf{
       position: absolute;
       top:0;
-      left:60px;
+      left:20px;
+    }
+
+    .status-container{
+      display: table;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      --moz-border-radius: 5px;
+      margin: 0 auto;
+      border: 1px solid #eee;
+    }
+
+    .status{
+      position: relative;
+      top: 2px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50px;
+      -moz-border-radius: 50px;
+      display: inline-block;
     }
 
     .table-container{
         margin: 0 auto;
-        padding: 50px;
-        height: 400px;
+        padding: 25px;
         display: table;
-        overflow-x: auto;
+        overflow-y: auto;
     }
-    
+
     .pure-table{
       background: white;
     }
-   
+
+    .arrow{
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      opacity: 0.6;
+      cursor: pointer;
+      transition: opacity 1s;
+      -webkit-transition: opacity 1s;
+    }
+    .arrow:hover{
+      opacity: 1;
+    }
+
     footer{
         bottom: 15px;
         width: 100%;
@@ -53,58 +93,91 @@
         margin-top: 10px;
     }
   </style>
-  
+
   <body>
     <img class="wolf" src="static/images/wolf-in-sheeps-clothing.png">
-    <img class="sheep" src="http://www.clipartbest.com/cliparts/aTe/pGE/aTepGE5T4.png">
+    <img class="sheep" src="static/images/sheep.png">
     <center><h1>{ Can I get your pa**word? }</h1></center>
-    <!-- <center><img src="static/images/separation573.gif"></center> -->
     <center><h3>We have captured <span class='count-num'></span> sheep for dinner now.</h3></center>
+    <div class="status-container">Sniffer Status: <div class="status bg-red"></div></div>
+
     <div class="table-container">
-    <table class="pure-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Account</th>
-                <th>Password</th>
-                <th>Client</th>
-                <th>Server</th>
-                <th>Protocol</th>
-            </tr>
-        </thead>
-        <tbody  id='pwd-wall'>
-        </tbody>
-    </table>
+      <table class="pure-table">
+          <thead>
+              <tr>
+                  <th>Account</th>
+                  <th>Password</th>
+                  <th>Client</th>
+                  <th>Server</th>
+                  <th>Protocol</th>
+                  <th>Mac Addr</th>
+              </tr>
+          </thead>
+          <tbody  id='pwd-wall'>
+          </tbody>
+      </table>
     </div>
-    <!-- Place this tag right after the last button or just before your close body tag. -->
+    <div class="arrow"><img src="static/images/arrow-top.png"></div>
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
     <footer>  Networking Experiment @ 2015<br/><br/><a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
     <a class="github-button" href="https://github.com/John-Lin" data-style="mega">Follow @John-Lin</a> 
     <a class="github-button" href="https://github.com/lockys" data-style="mega">Follow @lockys</a> 
     </footer>
     <script>
-      var myDataRef = new Firebase('https://amber-inferno-5029.firebaseio.com/pwd_table');
+      var myDataRef = new Firebase('https://amber-inferno-5029.firebaseio.com/pwd_table'),
+          StatusRef = new Firebase('https://amber-inferno-5029.firebaseio.com/status');
+          arrowEle = $('.arrow');
 
-      myDataRef.on('child_added', function(snapshot) {
-        var message = snapshot.val()
-            ,pwdStr = message.password
-            ,pwdLength = pwdStr.length
-            ,star='';
 
-        for(var i = 0 ; i < pwdLength/3+1 ; i++)star += '*';
+      myDataRef.authAnonymously(function(error, authData) {
+        if (error) {
+            console.log("Login Failed!", error);
+        } else {
+            console.log("Authenticated successfully with payload:", authData);
+            myDataRef.on('child_added', function(snapshot) {
+              var message = snapshot.val()
+              ,pwdStr = message.password
+              ,pwdLength = pwdStr.length
+              ,star='';
 
-        pwdStr = pwdStr.substring(0,pwdLength/3) + star + pwdStr.substring(pwdLength*2/3, pwdLength);
-        displayPairs(message.app, message.client, message.login, pwdStr, message.server);
+              for(var i = 0 ; i < pwdLength/3+1 ; i++){
+                star += '*';
+              }
+              pwdStr = pwdStr.substring(0,pwdLength/3) + star + pwdStr.substring(pwdLength*2/3, pwdLength);
+              displayPairs(message.app, message.client, message.login, pwdStr, message.server, message.mac);
+            });
+
+            myDataRef.on("value", function(snapshot) {
+              $('.count-num').html(snapshot.numChildren());
+            });
+            StatusRef.on("value", function(snapshot) {
+               var s = snapshot.val().status,
+                   statusEle = $('.status');
+               console.log(statusEle);
+               if(s === 'ON'){
+                 statusEle.addClass('bg-green');
+               }else{
+                 statusEle.removeClass('bg-green');
+               }
+            });
+        }
       });
 
-      myDataRef.on("value", function(snapshot) {
-        $('.count-num').html(snapshot.numChildren());
-      });
+      function displayPairs(app, client, login, pwd, server, mac) {
 
-      function displayPairs(app, client, login, pwd, server) {
-        $('<tr/>').text('').prepend($('<td/>').text(app)).prepend($('<td/>').text(server)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prepend($('<td/>').text('--')).prependTo($('#pwd-wall'));
+        if (typeof mac==='undefined'){
+            mac = 'No data';
+        }
+
+        $('<tr/>').text('').prepend($('<td/>').text(mac)).prepend($('<td/>').text(app)).prepend($('<td/>').text(server)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prependTo($('#pwd-wall'));
         $('#pwd-wall')[0].scrollTop = $('#pwd-wall')[0].scrollHeight;
       };
+
+      arrowEle.click(function(e){
+        $('html, body').animate({scrollTop: 0}, 600);
+      });
+
+
     </script>
   </body>
 </html>
