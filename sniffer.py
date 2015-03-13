@@ -24,8 +24,9 @@ class Sniffer(object):
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        pattern = 'tcp and dst port 80 or tcp and dst port 21'
-        # pattern = 'tcp and dst port 80 and dst port 23'
+        pattern = 'tcp and dst port 80 or dst port 21'
+        # pattern = 'tcp and dst port 80 or dst port 21'
+
         self.pc = pcap.pcap(kwargs['interface'])
         self.pc.setfilter(pattern)
 
@@ -185,8 +186,14 @@ class Sniffer(object):
                     ip = eth.data
                     tcp = ip.data
                     if len(tcp.data) > 0:
-                        self._get_http_payload(eth, ip, tcp)
-                        self._get_ftp_payload(eth, ip, tcp)
+                        # print tcp.dport
+                        # make sure the pattern is correct
+                        if tcp.dport == 80:
+                            self._get_http_payload(eth, ip, tcp)
+                        elif tcp.dport == 21:
+                            self._get_ftp_payload(eth, ip, tcp)
+                        else:
+                            pass
 
             except KeyboardInterrupt:
                 nrecv, ndrop, nifdrop = self.pc.stats()
