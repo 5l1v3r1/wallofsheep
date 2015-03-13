@@ -4,7 +4,7 @@ Wall of Sheep
 
 Screenshot
 ===========
-![wallofwheep](http://i4.minus.com/iDjDWEd2n04Jn.png)
+![wallofsheep](http://i4.minus.com/iDjDWEd2n04Jn.png "Wall of Sheep")
 
 
 Contributors
