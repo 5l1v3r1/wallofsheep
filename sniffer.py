@@ -17,6 +17,10 @@ class Sniffer(object):
 
         self._firebase = firebase.FirebaseApplication(settings.FIREBASE_URL,
                                                       None)
+
+        # Status update
+        self._firebase.patch('/status', {"status": "ON"})
+
         self.protocol = protocol
         if self.protocol == 'HTTP':
             pattern = 'tcp and dst port 80'
@@ -148,6 +152,9 @@ class Sniffer(object):
                 # print "No packet"
                 continue
 
+    def __del__(self):
+        # Status update
+        self._firebase.patch('/status', {"status": "OFF"})
 
 if __name__ == "__main__":
     s = Sniffer('HTTP', 'eth2')
