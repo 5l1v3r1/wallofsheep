@@ -9,25 +9,24 @@ from pprint import pprint
 import settings
 from utils import add_colons_to_mac
 
-APP_TO_PORT = {80: 'http'}
+APP_TO_PORT = {80: 'http', 23: 'telnet'}
 
 
 class Sniffer(object):
-    def __init__(self, protocol='HTTP', interface=None):
+    def __init__(self, *args, **kwargs):
 
         self._firebase = firebase.FirebaseApplication(settings.FIREBASE_URL,
                                                       None)
+        # TODO:
+        # Need to check firebase data first
+        # if status is "ON" exit the sniffer
 
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        self.protocol = protocol
-        if self.protocol == 'HTTP':
-            pattern = 'tcp and dst port 80'
-        else:
-            # Another protocol
-            pass
-        self.pc = pcap.pcap(interface)
+        pattern = 'tcp and dst port 80'
+        # pattern = 'tcp and dst port 80 and dst port 23'
+        self.pc = pcap.pcap(kwargs['interface'])
         self.pc.setfilter(pattern)
 
         self.all_user_info = {}
@@ -156,7 +155,8 @@ class Sniffer(object):
         # Status update
         self._firebase.patch('/status', {"status": "OFF"})
 
+
 if __name__ == "__main__":
-    s = Sniffer('HTTP', 'eth2')
+    s = Sniffer(interface='eth2')
     print '%s is listening on' % s.pc.name
     s.loop()
