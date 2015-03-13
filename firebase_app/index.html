@@ -13,12 +13,12 @@
 
     <!-- <img class="wolf" src="static/images/wolf-in-sheeps-clothing.png"> -->
     <!-- <img class="sheep" src="static/images/sheep.png"> -->
-      <center class="title-banner"><h1># Can I get your pa**word?</h1>
+      <div class="title-banner"><h1># Can I get your pa**word?</h1>
       <h3>We have captured <span class='count-num'></span> sheep for dinner now.</h3>
       <div class="status-container">Sniffer Status:
         <div class="status bg-red"></div>
       </div>
-      </center>
+      </div>
 
 
     <div class="table-container">
@@ -115,7 +115,7 @@
               var retLink = mess.answer[0].rdata,
                   curEle = $('.' + (s).replace(/\./g, '-'));
                   retLink = retLink.substring(0, retLink.length-1);
-              curEle.html('<a href="' + p + '://' + retLink + '" target="_blank" title="' + s + '">' + retLink + '</a>');
+              curEle.html('<a href="' + p.toLowerCase() + '://' + retLink + '" target="_blank" title="' + s + '">' + retLink + '</a>');
             },
             error: function(){
 

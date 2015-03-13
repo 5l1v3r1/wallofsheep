@@ -54,6 +54,7 @@
     }
 
     .title-banner, footer{
+      text-align: center;
       padding: 30px;
       color: gray;
       background: white;
@@ -64,7 +65,7 @@
 
     .status-container{
       display: table;
-      background: white;
+      background: #eee;
       padding: 10px;
       border-radius: 5px;
       --moz-border-radius: 5px;
@@ -109,8 +110,5 @@
     }
 
     footer{
-        bottom: 15px;
-        width: 100%;
-        text-align: center;
         margin-top: 10px;
     }
