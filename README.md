@@ -1,10 +1,12 @@
 Wall of Sheep
 =============
 
-The Wall of Sheep is dedicated to network security research and we using a powerful API to store and sync data in realtime - [Filebase](https://www.firebase.com/)
+The Wall of Sheep is dedicated to network security research and we make use of a powerful API provided by [Firebase](https://www.firebase.com/) to store and sync data in realtime.
 
-Without SSL/TLS your password just like streaking. We recommend that service provider in the list using HTTPS for securing web pages.
+Without SSL/TLS, your password is just like streaking. Therefore, we recommend that service provider in the list should secure their websites with HTTPS.
 
+You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).    
+The circle symbolizes that the status of sniffer programm. Geen is online, otherwise offline.
 
 Screenshot
 ===========
