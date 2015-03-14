@@ -68,7 +68,8 @@
           timeLimit = '11',
           clockEle = $('.clock'),
           alertClk = $('.alert-clk'),
-          closedEle = $('.closed-alert');
+          closedEle = $('.closed-alert'),
+          snifferIdenEle = $('.sniffer-indication');
 
       clockEle.html(timeLimit);
       alertClk.html(parseInt(timeLimit)-1);
@@ -78,6 +79,7 @@
             console.log("Login Failed!", error);
         } else {
             myDataRef = myDataRef.endAt().limit(20);
+
             //Trigger when the data changed.
             myDataRef.on('child_added', function(snapshot) {
               var message = snapshot.val(),
@@ -109,7 +111,11 @@
 
                if(s === 'ON'){
                  closedEle.addClass('content-hidden');
+                 snifferIdenEle.addClass('content-hidden');
                  statusEle.addClass('bg-green');
+
+                 clearTimeout(timer);
+
                }else{
                  statusEle.removeClass('bg-green');
                }
@@ -121,7 +127,7 @@
           clearTimeout(timer);
           statusRef.once("value", function(snap) {
              if(snap.val().status === 'OFF'){
-                  $('.sniffer-indication').addClass('content-hidden');
+                  snifferIdenEle.addClass('content-hidden');
                   statusRef.update({status: 'ON'});
              }
           });
@@ -135,22 +141,6 @@
           s = s - 1;
           clockEle.html(s);
           timer = setTimeout("conuntDown();", 1000);
-      }
-
-      function displayPairs(app, client, login, pwd, server, mac) {
-        var innerLinkHtml = '<span class="' + server.replace(/\./g, '-') + '">' + server + '</span>';
-
-        if (typeof mac==='undefined'){
-            mac = 'No data';
-        }
-        if(typeof login==='undefined'){
-            login = '---';
-        }
-
-        $('<tr/>').text('').prepend($('<td/>').text(mac)).prepend($('<td/>').text(app.toUpperCase())).prepend($('<td/>').html(innerLinkHtml)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prependTo($('#pwd-wall'));
-
-         $('#pwd-wall')[0].scrollTop = $('#pwd-wall')[0].scrollHeight;
-         getIpReverseDomain(server, app);
       }
 
       function getIpReverseDomain(s, p){
@@ -181,12 +171,28 @@
                   return;
              }else{
                   statusRef.update({status: 'OFF'});
-                  $('.sniffer-indication').removeClass('content-hidden');
+                  snifferIdenEle.removeClass('content-hidden');
                   setTimeout("reOpenStatus();", (parseInt(timeLimit)-1)*1000);
                   conuntDown();
              }
           });
       });
+
+      function displayPairs(app, client, login, pwd, server, mac) {
+        var innerLinkHtml = '<span class="' + server.replace(/\./g, '-') + '">' + server + '</span>';
+
+        if (typeof mac==='undefined'){
+            mac = 'No data';
+        }
+        if(typeof login==='undefined'){
+            login = '---';
+        }
+
+        $('<tr/>').text('').prepend($('<td/>').text(mac)).prepend($('<td/>').text(app.toUpperCase())).prepend($('<td/>').html(innerLinkHtml)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prependTo($('#pwd-wall'));
+
+         $('#pwd-wall')[0].scrollTop = $('#pwd-wall')[0].scrollHeight;
+         getIpReverseDomain(server, app);
+      }
 
       window.onbeforeunload = function() {
         // statusRef.update({status: 'ON'});
