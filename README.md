@@ -10,7 +10,6 @@ The circle symbolizes that the status of sniffer programm. Geen is online, other
 
 Screenshot
 ===========
-![wallofsheep](/screenshot/wallofsheep_pic.png?raw=true "Wall of Sheep")
 ![wallofsheep](/screenshot/screenshot.jpeg?raw=true "Wall of Sheep")
 
 Contributors
