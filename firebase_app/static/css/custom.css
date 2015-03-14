@@ -23,6 +23,14 @@
       text-decoration:  underline;
     }
 
+    .content-hidden{
+      display: none;
+    }
+    
+    .fg-red{
+      color: red;
+    }
+
     .bg-red{
       background: red;
     }
