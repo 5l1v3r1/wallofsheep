@@ -4,6 +4,8 @@ import re
 import socket
 import urlparse
 import binascii
+import signal
+import sys
 from firebase import firebase
 from pprint import pprint
 import settings
@@ -226,6 +228,7 @@ class Sniffer(object):
                     # print "No packet"
                     continue
             else:
+                signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
                 print "I can not see packets."
                 continue
 
