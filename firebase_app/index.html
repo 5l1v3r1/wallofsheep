@@ -22,7 +22,7 @@
         <div class="status bg-red"></div>
       </div>
       <h3 class="content-hidden sniffer-indication">Sniffer will restart in <span class="clock"></span> seconds.</h3>
-      <h3 class="closed-alert content-hidden fg-red">Someone or you closed the sniffer, please wait, no more than <span class="alert-clk"></span> seconds.</h3>
+      <h3 class="closed-alert content-hidden fg-red">Someone or manager closed the sniffer, please wait.</h3>
     </div>
 
 
@@ -64,7 +64,7 @@
           statusRef = new Firebase('https://amber-inferno-5029.firebaseio.com/status'),
           arrowEle = $('.arrow'),
           statusListener,
-          timer,
+          timer = undefined,
           timeLimit = '11',
           clockEle = $('.clock'),
           alertClk = $('.alert-clk'),
@@ -115,8 +115,11 @@
                  statusEle.addClass('bg-green');
 
                  clearTimeout(timer);
+                 timer = undefined;
 
                }else{
+                 clearTimeout(timer);
+                 timer = undefined;
                  statusEle.removeClass('bg-green');
                }
           });
@@ -137,6 +140,7 @@
           var s = parseInt(clockEle.html());
           if(s === 0){
             clearTimeout(timer);
+            timer = undefined;
           }
           s = s - 1;
           clockEle.html(s);
@@ -195,7 +199,9 @@
       }
 
       window.onbeforeunload = function() {
-        // statusRef.update({status: 'ON'});
+        if(typeof timer !== 'undefined'){
+            statusRef.update({status: 'ON'});
+        }
       }
 
 
