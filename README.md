@@ -6,7 +6,7 @@ The Wall of Sheep is dedicated to network security research and we make use of a
 Without SSL/TLS, your password is just like streaking. Therefore, we recommend that service provider in the list should secure their websites with HTTPS.
 
 You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).    
-The circle symbolizes that the status of sniffer programm. Geen is online, otherwise offline.
+The circle symbolizes that the status of sniffer programm. Green is online, otherwise offline.
 
 Screenshot
 ===========
