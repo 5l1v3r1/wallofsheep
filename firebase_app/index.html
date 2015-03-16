@@ -5,11 +5,16 @@
     <link rel="stylesheet" href="static/css/custom.css">
     <link rel="stylesheet" href="static/css/custom-responsive.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A wall of sheep to get data from firebase in real time.">
+    <meta name="keywords" content="Password streaking, firebaseapp, network security, sniffer">
+    <meta name="author" content="lockys">
+    <meta charset="UTF-8">
     <title>Password Streaking</title>
   </head>
 
   <body>
-      <div class="opacity-container"></div>
+    <!-- A CONTAINER TO CONVER ALL THE PAGE -->
+    <div class="opacity-container"></div>
 
     <!-- <img class="wolf" src="static/images/wolf-in-sheeps-clothing.png"> -->
     <!-- <img class="sheep" src="static/images/sheep.png"> -->
@@ -18,14 +23,16 @@
       <h3>$ python sniffer.py</h3>
       <h3>After a while,</h3>
       <h3>Below are the newest <span class='count-num'></span> sheep we just catched for dinner now.</h3>
+
       <div class="status-container">Sniffer Status:
         <div class="status bg-red"></div>
       </div>
+
       <h3 class="content-hidden sniffer-indication">Sniffer will restart in <span class="clock"></span> seconds.</h3>
       <h3 class="closed-alert content-hidden fg-red">Someone or manager closed the sniffer, please wait.</h3>
     </div>
 
-
+    <!-- TABLE OF PASSWORD. -->
     <div class="table-container">
       <table class="pure-table">
           <thead>
@@ -42,19 +49,19 @@
           </tbody>
       </table>
     </div>
-    
-    <div class="arrow">
-      <img src="static/images/arrow-top.png">
-    </div>
-    
+
     <script async defer id="github-bjs" src="https://buttons.github.io/buttons.js"></script>
 
     <footer>
-      Network Security Research # Real Time Wall of Sheep @ 2015<br/><br/><a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
+      Network Security Research # Real Time Wall of Sheep @ 2015<br/><br/>
+      <a href="https://github.com/John-Lin/wallofsheep" target="_blank">View on Github</a><br/><br/>
       <a class="github-button" href="https://github.com/John-Lin" data-style="mega">Follow @John-Lin</a> 
       <a class="github-button" href="https://github.com/lockys" data-style="mega">Follow @lockys</a> 
     </footer>
 
+    <div class="arrow">
+      <img src="static/images/arrow-top.png">
+    </div>
 
     <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
@@ -70,6 +77,37 @@
           alertClk = $('.alert-clk'),
           closedEle = $('.closed-alert'),
           snifferIdenEle = $('.sniffer-indication');
+
+      var inputListeners = {};
+
+      inputListeners.init = function(){
+        this.onArrowClick();
+        this.onShortCutClick('shift+s');
+      }
+
+      inputListeners.onArrowClick = function(){
+          arrowEle.click(function(e){
+            $('html, body').animate({scrollTop: 0}, 600);
+          });
+      }
+
+      inputListeners.onShortCutClick = function(regiserShortcut){
+          $(document).bind('keydown', regiserShortcut, function(e){
+            statusRef.once("value", function(snap) {
+             if(snap.val().status === 'OFF'){
+              closedEle.removeClass('content-hidden');
+              return;
+            }else{
+              statusRef.update({status: 'OFF'});
+              snifferIdenEle.removeClass('content-hidden');
+              setTimeout("reOpenStatus();", (parseInt(timeLimit)-1)*1000);
+              conuntDown();
+            }
+          });
+          });
+      }
+
+      inputListeners.init();
 
       clockEle.html(timeLimit);
       alertClk.html(parseInt(timeLimit)-1);
@@ -163,24 +201,6 @@
 
             }});
       }
-
-      arrowEle.click(function(e){
-        $('html, body').animate({scrollTop: 0}, 600);
-      });
-
-      $(document).bind('keydown', 'shift+s', function(e){
-          statusRef.once("value", function(snap) {
-             if(snap.val().status === 'OFF'){
-                  closedEle.removeClass('content-hidden');
-                  return;
-             }else{
-                  statusRef.update({status: 'OFF'});
-                  snifferIdenEle.removeClass('content-hidden');
-                  setTimeout("reOpenStatus();", (parseInt(timeLimit)-1)*1000);
-                  conuntDown();
-             }
-          });
-      });
 
       function displayPairs(app, client, login, pwd, server, mac) {
         var innerLinkHtml = '<span class="' + server.replace(/\./g, '-') + '">' + server + '</span>';
