@@ -8,12 +8,12 @@ import signal
 import sys
 import os
 import argparse
+import pdb
 
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError, RqlDriverError
 
 from pprint import pprint
-import settings
 from utils import add_colons_to_mac
 
 RDB_HOST = os.environ.get('RDB_HOST') or 'localhost'
@@ -29,8 +29,9 @@ def dbSetup():
         r.db_create(PWD_DB).run(connection)
         r.db(PWD_DB).table_create('pwd_table').run(connection)
         r.db(PWD_DB).table_create('status_table').run(connection)
+
         # Initial status value
-        r.table('status_table').insert([{"status":"ON"}]).run(self.rdb_conn)
+        r.db(PWD_DB).table('status_table').insert([{"status": "ON"}]).run(connection)
         print 'Database setup completed. Now run the sniffer without --setup.'
     except RqlRuntimeError:
         print 'Sniffer database already exists. Run the sniffer without --setup.'
@@ -46,8 +47,12 @@ class Sniffer(object):
             print "No database connection could be established."
             sys.exit(0)
 
+        cursor = r.table("status_table").run(self.rdb_conn)
+        for document in cursor:
+            self.status_id = document['id']
+
         # Status ON
-        r.table('status_table').update([{"status":"ON"}]).run(self.rdb_conn)
+        print r.table('status_table').get(self.status_id).update({"status": "ON"}).run(self.rdb_conn)
 
         pattern = 'tcp and dst port 80 or dst port 21'
         # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
@@ -229,10 +234,13 @@ class Sniffer(object):
         # iLMS dst IP 140.114.69.137
 
     def loop(self):
-        result = {'status': 'ON'}
-        # cursor = r.table("status_table").filter(r.row["status"] == "ON").run()
+        # result = {'status': 'ON'}
+        cursor = r.table("status_table").changes().run(self.rdb_conn)
+        for document in cursor:
+            status_result = document['status']
+
         while True:
-            if result.get('status') == 'ON':
+            if status_result == 'ON':
                 try:
                     for ts, buf in self.pc:
                         eth = dpkt.ethernet.Ethernet(buf)
@@ -263,8 +271,8 @@ class Sniffer(object):
 
     def __del__(self):
         # Status OFF
-        r.table('status_table').update([{"status":"OFF"}]).run(self.rdb_conn)
-
+        r.table('status_table').get(self.status_id).update({"status": "OFF"}).run(self.rdb_conn)
+        # pdb.set_trace()
         try:
             self.rdb_conn.close()
         except AttributeError:
@@ -279,6 +287,6 @@ if __name__ == "__main__":
     if args.run_setup:
         dbSetup()
     else:
-        s = Sniffer(interface='eth2')
+        s = Sniffer(interface='eth0')
         print '%s is listening on' % s.pc.name
         s.loop()
