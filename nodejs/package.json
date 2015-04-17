@@ -1,8 +1,0 @@
-{   "name" : "passwd_sniffer",
-    "version" : "0.0.1",
-    "description" : "Live capture the passwords that pass through your network adapter",
-    "author": "John Lin <linton.tw@gmail.com>",
-    "dependencies": {
-        "pcap": ">=2.0.0"
-    }
-}
