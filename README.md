@@ -8,7 +8,37 @@ The Wall of Sheep is dedicated to network security research and we make use of a
 Without SSL/TLS, your password is just like streaking. Therefore, we recommend that service provider in the list should secure their websites with HTTPS.
 
 You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).
-The circle symbolizes that the status of sniffer programm. Green is online, otherwise offline.
+The circle symbolizes that the status of sniffer program. Green is online, otherwise offline.
+
+
+**[April 18, 2015 Updated]** Add `Node.js` sniffer implementation. Now OSX user can play with it. :laughing:
+
+
+Using brew install `Node.js` and `npm`.
+
+```
+$ brew update
+$ brew install node
+$ brew install npm
+```
+
+Clone the repo and change directory to nodejs folder.
+
+```
+$ git clone git@github.com:John-Lin/wallofsheep.git
+```
+
+packet capturing depend on [node_pcap](https://github.com/mranney/node_pcap) using `npm` to get `node_pcap`.
+
+```
+$ npm install pcap
+```
+
+That's it. Basic usage
+
+```
+$ sudo node sniffer.js en0
+```
 
 
 Work in progress
