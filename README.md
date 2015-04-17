@@ -11,7 +11,7 @@ You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).
 The circle symbolizes that the status of sniffer program. Green is online, otherwise offline.
 
 
-[April 18, 2015 Updated] Add `Node.js` sniffer implementation. Now OSX user can play with it. :laughing:
+**[April 18, 2015 Updated]** Add `Node.js` sniffer implementation. Now OSX user can play with it. :laughing:
 
 
 Using brew install `Node.js` and `npm`.
