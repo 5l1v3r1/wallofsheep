@@ -81,7 +81,7 @@ function HTTPPostParser(packet) {
         var sheepInfo = qs.parse(lastContent);
 
         // For DEGUG print
-        console.log(sheepInfo);
+        // console.log(sheepInfo);
 
         var account = GetHTTPLoginAccount(sheepInfo);
         var password = GetHTTPLoginPassword(sheepInfo);
