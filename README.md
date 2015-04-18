@@ -10,9 +10,20 @@ Without SSL/TLS, your password is just like streaking. Therefore, we recommend t
 You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).
 The circle symbolizes that the status of sniffer program. Green is online, otherwise offline.
 
+New implementation in Node.js
+=============
 
 **[April 18, 2015 Updated]** Add `Node.js` sniffer implementation. Now OSX user can play with it. :laughing:
 
+We believe that using Javascript is more efficient. Please refer to [Why capture packets in JavaScript?](https://github.com/mranney/node_pcap#why-capture-packets-in-javascript)
+
+In simple terms
+
+- Event-based.
+- Handling binary data is fast and efficient.
+- Good HTTP parser.
+
+Here is installation method.
 
 Using brew install `Node.js` and `npm`.
 
@@ -37,7 +48,11 @@ $ npm install pcap
 That's it. Basic usage
 
 ```
+john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
 $ sudo node sniffer.js en0
+[*] Using interface: en0
+[192.168.0.16:61881 -> 140.***.**.***:80] Account: hello@gmail.com
+[192.168.0.16:61881 -> 140.***.**.***:80] Password: thisispassword
 ```
 
 
