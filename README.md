@@ -10,14 +10,14 @@ Without SSL/TLS, your password is just like streaking. Therefore, we recommend t
 You can check out the [demo page](https://amber-inferno-5029.firebaseapp.com).
 The circle symbolizes that the status of sniffer program. Green is online, otherwise offline.
 
-We built sniffer in two language `Python` and `Node.js`. `Node.js` version support on Linux and OSX. unfortunately, `Python` version only support on Linux. 
+We built sniffer in two languages `Python` and `Node.js`. The `Node.js` version support on OSX and Linux. Unfortunately, The `Python` version only support on Linux.
 
 New implementation in Node.js
 =============
 
 **[April 18, 2015 Updated]** Add `Node.js` sniffer implementation. Now OSX user can play with it. :laughing:
 
-We believe that using Javascript is more efficient. Please refer to [Why capture packets in JavaScript?](https://github.com/mranney/node_pcap#why-capture-packets-in-javascript)
+We believe that using JavaScript is more efficient. Please refer to [Why capture packets in JavaScript?](https://github.com/mranney/node_pcap#why-capture-packets-in-javascript)
 
 In simple terms
 
@@ -96,7 +96,7 @@ Screenshot
 
 Contributing
 ===========
-Your contribution is welcome! follow these steps:
+Your contribution is welcome :octocat: ! follow these steps:
 
 - Fork this project.
 - Create a branch (git checkout -b my_feature_patch)
