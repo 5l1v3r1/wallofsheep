@@ -25,7 +25,7 @@ In simple terms
 
 Here is installation method.
 
-Using brew install `Node.js`, `npm` and `rethinkdb`.
+Using brew install `Node.js`, `npm` and `rethinkdb` (option).
 
 ```
 $ brew update
@@ -40,7 +40,7 @@ Clone the repo and change directory to `nodejs` folder.
 $ git clone git@github.com:John-Lin/wallofsheep.git
 ```
 
-Packet capturing depends on [mranney/node_pcap](https://github.com/mranney/node_pcap) and save data to RethinkDB using [neumino/thinky](https://github.com/neumino/thinky) you can use `npm` to get these packages.
+Packet capturing depends on [mranney/node_pcap](https://github.com/mranney/node_pcap) and save data to RethinkDB using [neumino/thinky](https://github.com/neumino/thinky) (option) you can use `npm` to get these packages.
 
 ```
 $ npm install pcap
@@ -48,6 +48,8 @@ $ npm install thinky
 ```
 
 That's it. Basic usage
+
+If you don't want to save password in RethinkDB skip to second step and start the `sniffer_console` with sudo.
 
 First, start the RethinkDB server like this:
 
@@ -60,7 +62,7 @@ info: Listening for administrative HTTP connections on port 8080
 info: Server ready
 ```
 
-Second, open a new terminal and start the sniffer with sudo
+Second, open a new terminal and start the `sniffer` with sudo
 
 ```
 john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
