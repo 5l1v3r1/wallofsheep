@@ -1,7 +1,21 @@
 var nic = process.argv[2];
 var qs = require('querystring');
+var User = require('./models/user');
+var protocol = require('./ports_table');
 var pcap = require('./node_modules/pcap'),
     pcap_session = pcap.createSession(nic, 'ip proto \\tcp');
+
+var userinfo = new User({
+    timestamp: null,
+    shost: null,
+    sIP: null,
+    dIP: null,
+    sPort: null,
+    dPort: null,
+    protocol: null,
+    login: null,
+    password: null
+});
 
 function GetHTTPLoginAccount(data) {
     var account = 'None';
@@ -87,6 +101,7 @@ function HTTPPostParser(packet) {
         var password = GetHTTPLoginPassword(sheepInfo);
 
         ConsolePrinter(shost, saddr, daddr, sport, dport, account, password);
+        SavetoRethinkDB(shost, saddr, daddr, sport, dport, account, password);
 
     }
 
@@ -122,11 +137,12 @@ function FTPloginParser(packet) {
         var pass = splitted[0].match(ftp_pw_re);
         if (user !== null) {
             console.log('[-] user:' + user[1]);
+            SavetoRethinkDB(shost, saddr, daddr, sport, dport, user[1], null);
         }
         if (pass !== null) {
             console.log('[-] pass:' + pass[1]);
+            SavetoRethinkDB(shost, saddr, daddr, sport, dport, null, pass[1]);
         }
-
     }
 
 }
@@ -134,6 +150,37 @@ function FTPloginParser(packet) {
 function ConsolePrinter(shost, srcIP, dstIP, sport, dport, account, password) {
     console.log('[' + srcIP + ':' +  sport + ' -> ' + dstIP + ':' +  dport + '] Account: ' + account);
     console.log('[' + srcIP + ':' +  sport + ' -> ' + dstIP + ':' +  dport + '] Password: ' + password);
+}
+
+function SavetoRethinkDB(shost, srcIP, dstIP, sport, dport, account, password) {
+    // If HTTPPostParser can not get account or password given None do NOT save
+    if (account === 'None' || password === 'None') {
+        return;
+    }
+
+    userinfo.timestamp = Date();
+    userinfo.shost = shost;
+    userinfo.sIP = srcIP;
+    userinfo.dIP = dstIP;
+    userinfo.sPort = parseInt(sport);
+    userinfo.dPort = parseInt(dport);
+    userinfo.protocol = protocol[parseInt(dport)];
+
+    // These conditions pervent to save null in for FTP
+    if(account !== null) {
+        userinfo.login = account;
+    }
+    if (password !== null) {
+        userinfo.password = password;
+    }
+
+    // if account and password are not null then save it.
+    if(userinfo.login !== null && userinfo.password !== null) {
+        userinfo.save().then(function() {
+            console.log('Save or not: %s', userinfo.isSaved());
+            console.log(userinfo);
+        });
+    }
 }
 
 if (!nic) {
@@ -153,7 +200,7 @@ pcap_session.on('packet', function (raw_packet) {
     var isPOP3 = packet.payload.payload.payload.dport === 110  && packet.payload.payload.payload.data !== null;
     var isIMAP = packet.payload.payload.payload.dport === 143  && packet.payload.payload.payload.data !== null;
 
-    // For all protocol we interested and data not null
+    // For all protocols we interested and also data not null
     if (isHTTP) {
       HTTPPostParser(packet);
     } else if (isFTP) {
