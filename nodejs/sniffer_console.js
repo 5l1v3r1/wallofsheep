@@ -94,7 +94,7 @@ function HTTPPostParser(packet) {
 
 }
 
-function FTPloginParser(packet) {
+function GetFTPPOPLoginPass(packet) {
     var data = packet.payload.payload.payload.data.toString('ascii');
 
     // Source MAC address
@@ -112,12 +112,12 @@ function FTPloginParser(packet) {
     // Dst port
     var dport = packet.payload.payload.payload.dport.toString();
 
-    var ftp_user_re = /^USER (.*)$/;
-    var ftp_pw_re = /^PASS (.*)$/;
+    var ftp_user_re = /^USER (.*)$/i;
+    var ftp_pw_re = /^PASS (.*)$/i;
     var splitted = data.split('\r\n');
 
-    var isUSER = splitted[0].indexOf('USER');
-    var isPASS = splitted[0].indexOf('PASS');
+    var isUSER = splitted[0].toLowerCase().indexOf('user');
+    var isPASS = splitted[0].toLowerCase().indexOf('pass');
 
     if (isUSER > -1 || isPASS > -1) {
         var user = splitted[0].match(ftp_user_re);
@@ -130,6 +130,36 @@ function FTPloginParser(packet) {
         }
     }
 
+}
+
+function GetIMAPLoginPass(packet) {
+    var data = packet.payload.payload.payload.data.toString('ascii');
+
+    // Source MAC address
+    var shost = packet.payload.shost.toString('ascii');
+
+    // Source IP address
+    var saddr = packet.payload.payload.saddr.toString('ascii');
+
+    // Dst IP address
+    var daddr = packet.payload.payload.daddr.toString('ascii');
+
+    // Source port
+    var sport = packet.payload.payload.payload.sport.toString();
+
+    // Dst port
+    var dport = packet.payload.payload.payload.dport.toString();
+
+    var imapUserPassRE = /^LOGIN (.*) (.*)$/i;
+    // console.log(data);
+    var splitted = data.split('\r\n');
+
+    var login = splitted[0].match(imapUserPassRE);
+    var isLogin = splitted[0].toLowerCase().indexOf('login');
+
+    if (isLogin > -1) {
+        ConsolePrinter(shost, saddr, daddr, sport, dport, login[1], login[2]);
+    }
 }
 
 function ConsolePrinter(shost, srcIP, dstIP, sport, dport, account, password) {
@@ -162,11 +192,11 @@ pcap_session.on('packet', function (raw_packet) {
     if (isHTTP) {
       HTTPPostParser(packet);
     } else if (isFTP) {
-      FTPloginParser(packet);
+      GetFTPPOPLoginPass(packet);
     } else if (isPOP3) {
-        // TODO parse POP3
+      GetFTPPOPLoginPass(packet);
     } else if (isIMAP) {
-        // TODO parse IMAP
+      GetIMAPLoginPass(packet);
     } else {
 
     }
