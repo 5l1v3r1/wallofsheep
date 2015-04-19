@@ -25,7 +25,7 @@ function GetHTTPLoginAccount(data) {
   } else if (data.loginAccount) {
     account = data.loginAccount;
   } else {
-    console.log('[-] Can not find account pattern.' + data);
+    console.log('[-] Can not find account pattern.');
   }
   return account;
 }
@@ -71,7 +71,7 @@ function HTTPPostParser(packet) {
   var isPOST = data.indexOf('POST');
   // If there is a POST method
   if (isPOST > -1) {
-    // HTTP header with conten
+    // HTTP header with content
     // console.log(data);
     var headerContent = data.split('\r\n');
 
@@ -89,6 +89,9 @@ function HTTPPostParser(packet) {
     var password = GetHTTPLoginPassword(sheepInfo);
 
     ConsolePrinter(shost, saddr, daddr, sport, dport, account, password);
+  } else {
+    // Other methods e.g. GET
+    // console.log(data);
   }
 
 }
