@@ -1,5 +1,13 @@
 Wall of Sheep
 =============
+```
+ __    __      _ _          __   __ _                     
+/ / /\ \ \__ _| | |   ___  / _| / _\ |__   ___  ___ _ __  
+\ \/  \/ / _` | | |  / _ \| |_  \ \| '_ \ / _ \/ _ \ '_ \ 
+ \  /\  / (_| | | | | (_) |  _| _\ \ | | |  __/  __/ |_) |
+  \/  \/ \__,_|_|_|  \___/|_|   \__/_| |_|\___|\___| .__/ 
+                                                   |_|    
+```
 
 [![Join the chat at https://gitter.im/John-Lin/wallofsheep](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/John-Lin/wallofsheep?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
