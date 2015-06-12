@@ -1,12 +1,12 @@
 Wall of Sheep
 =============
 ```
- _       _____    __    __       ____  ______   _____ __  __________________ 
+ _       _____    __    __       ____  ______   _____ __  __________________
 | |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
 | | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
-| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/ 
-|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/      
-                                                                             
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
+
 ```
 
 [![Join the chat at https://gitter.im/John-Lin/wallofsheep](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/John-Lin/wallofsheep?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -64,7 +64,26 @@ That's it.
 Basic usage
 =============
 
-If you don't want to save passwords in RethinkDB just skip to second step and start the `sniffer_console` with sudo.
+Two ways to use
+
+Not saving the credentials. Start the `sniffer` with sudo
+
+```
+john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
+$ sudo node sniffer.js -i en0
+[-] Loading RethinkDB module.
+  _       _____    __    __       ____  ______   _____ __  __________________
+| |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
+| | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
+[*] Using interface: en0
+[192.168.0.16:61881 -> 140.***.**.***:80] Account: hello@gmail.com
+[192.168.0.16:61881 -> 140.***.**.***:80] Password: thisispassword
+```
+
+
+Saving credentials in RethinkDB need `-s` option.
 
 First, start the RethinkDB server like this:
 
@@ -81,7 +100,13 @@ Second, open a new terminal and start the `sniffer` with sudo
 
 ```
 john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
-$ sudo node sniffer.js en0
+$ sudo node sniffer.js -i en0 -s
+[-] Loading RethinkDB module.
+  _       _____    __    __       ____  ______   _____ __  __________________
+| |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
+| | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
 [*] Using interface: en0
 [192.168.0.16:61881 -> 140.***.**.***:80] Account: hello@gmail.com
 [192.168.0.16:61881 -> 140.***.**.***:80] Password: thisispassword
