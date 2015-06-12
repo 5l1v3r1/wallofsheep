@@ -6,6 +6,7 @@
   "author": "John Lin <linton.tw@gmail.com> (http://linton.tw/)",
   "dependencies": {
     "pcap": ">=2.0.0",
-    "thinky": ">=2.0.2"
+    "thinky": ">=2.0.2",
+    "minimist": ">=1.1.1"
   }
 }
