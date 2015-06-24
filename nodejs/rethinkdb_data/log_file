@@ -1,0 +1,21 @@
+2015-06-24T13:28:31.340964000 0.449463s notice: Recursively removing directory /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/tmp
+2015-06-24T13:28:31.344215000 0.452721s notice: Initializing directory /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data
+2015-06-24T13:28:31.344673000 0.453171s info: Creating a default database for your convenience. (This is because you ran 'rethinkdb' without 'create', 'serve', or '--join', and the directory '/Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data' did not already exist or is empty.)
+2015-06-24T13:28:31.344724000 0.453220s notice: Running rethinkdb 2.0.3 (CLANG 6.1.0 (clang-602.0.53))...
+2015-06-24T13:28:31.354648000 0.463146s notice: Running on Darwin 14.4.0 x86_64
+2015-06-24T13:28:31.354708000 0.463205s notice: Loading data from directory /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data
+2015-06-24T13:28:31.534607000 0.643103s info: Automatically using cache size of 100 MB
+2015-06-24T13:28:31.534618000 0.643115s warn: Cache size does not leave much memory for server and query overhead (available memory: 678 MB).
+2015-06-24T13:28:31.534628000 0.643124s warn: Cache size is very low and may impact performance.
+2015-06-24T13:28:31.536058000 0.644554s notice: Listening for intracluster connections on port 29015
+2015-06-24T13:28:31.539779000 0.648275s notice: Listening for client driver connections on port 28015
+2015-06-24T13:28:31.539907000 0.648404s notice: Listening for administrative HTTP connections on port 8080
+2015-06-24T13:28:31.539915000 0.648411s notice: Listening on addresses: 127.0.0.1, ::1
+2015-06-24T13:28:31.539919000 0.648415s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2015-06-24T13:28:31.539922000 0.648418s notice: Server ready, "wlib_a_043_lib_nthu_edu_tw_xh8" 68df6776-71c2-4d38-926a-5785e4195ba4
+2015-06-24T15:01:03.878460000 5553.357076s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/974f6875-6e5f-4cfe-8336-9064e8388c59
+2015-06-24T15:03:30.053604000 5699.541960s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/8b14b18d-3a5d-4b16-a60f-f85be40c5c03
+2015-06-24T15:09:04.797623000 6034.308245s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/27a8e59b-1a42-410a-aea5-ebaeb91b46c5
+2015-06-24T15:09:04.798994000 6034.309616s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/a6b68193-7b2e-4bbe-8940-ce817f82ed20
+2015-06-24T15:10:28.126386000 6117.642575s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/49938046-41c6-486a-8866-d935d6e60150
+2015-06-24T15:10:41.468099000 6130.985184s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/725b35bb-32fd-40ca-9419-60e7d7b66a82
