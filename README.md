@@ -111,7 +111,39 @@ $ sudo node sniffer.js -i en0 -s
 [192.168.0.16:61881 -> 140.***.**.***:80] Account: hello@gmail.com
 [192.168.0.16:61881 -> 140.***.**.***:80] Password: thisispassword
 ```
+How to Run Web
+==============
+**Deploy firebase web**  
+First, Install firebase toolkits.
 
+```
+╭─Calvin at Calvin's Macbook in ~/Coding/Projects/web/wallofsheep/firebase_app on master✔ using
+╰─± npm install -g firebase-tools
+```
+
+Find out the following code snippet and change to your own firebase's project id and create both **pwd_table** & **status** table  
+in the Firebase management panel.
+
+```
+var myDataRef = new Firebase('https://<your-project-id>.firebaseio.com/pwd_table'),
+    statusRef = new Firebase('https://<your-project-id>.firebaseio.com/status'),
+```
+Last, just do
+
+```
+╭─Calvin at Calvin's Macbook in ~/Coding/Projects/web/wallofsheep/firebase_app on master✔ using
+╰─± firebase deploy
+```
+After a moment, you can find your site on https://<your-project-id>.firebaseapp.com/  
+
+**Running web implemented in express**  
+Just change directory to express_app, do the following command, do forget to run rethinkdb and sniffer.js metioned above.
+
+```
+╭─Calvin at Calvin's Macbook in ~/Coding/Projects/web/wallofsheep/express_app on master✔ using
+╰─± npm install & npm start
+```
+Now, You can wait for the comming sheep :smile:
 
 Work in progress
 ================

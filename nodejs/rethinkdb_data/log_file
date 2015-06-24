@@ -19,3 +19,8 @@
 2015-06-24T15:09:04.798994000 6034.309616s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/a6b68193-7b2e-4bbe-8940-ce817f82ed20
 2015-06-24T15:10:28.126386000 6117.642575s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/49938046-41c6-486a-8866-d935d6e60150
 2015-06-24T15:10:41.468099000 6130.985184s notice: Removing file /Users/Calvin/Google Drive/Coding/Projects/web/wallofsheep/nodejs/rethinkdb_data/725b35bb-32fd-40ca-9419-60e7d7b66a82
+2015-06-25T00:41:06.260506000 30132.056648s notice: Server got SIGINT from pid 3798, uid 501; shutting down...
+2015-06-25T00:41:06.263043000 30132.059183s notice: Shutting down client connections...
+2015-06-25T00:41:06.276587000 30132.072726s notice: All client connections closed.
+2015-06-25T00:41:06.276602000 30132.072741s notice: Shutting down storage engine... (This may take a while if you had a lot of unflushed data in the writeback cache.)
+2015-06-25T00:41:06.344128000 30132.140268s notice: Storage engine shut down.
