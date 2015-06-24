@@ -136,7 +136,7 @@ Last, just do
 After a moment, you can find your site on https://your-project-id.firebaseapp.com
 
 **Running web implemented in express**  
-Just change directory to express_app, do the following command, do forget to run rethinkdb and sniffer.js metioned above.
+Just change directory to express_app, do the following command, do not forget to run rethinkdb and sniffer.js metioned above.
 
 ```
 ╭─~/Coding/Projects/web/wallofsheep/express_app on master✔ using
