@@ -121,7 +121,7 @@ First, Install firebase toolkits.
 ╰─± npm install -g firebase-tools
 ```
 
-Find out the following code snippet and change to your own firebase's project id and create both **pwd_table** & **status** table in the Firebase management panel.
+Find out the following code snippet in **firebase_app/index.html** and change to your own firebase's project id and create both **pwd_table** & **status** table in the Firebase management panel.
 
 ```
 var myDataRef = new Firebase('https://<your-project-id>.firebaseio.com/pwd_table'),
