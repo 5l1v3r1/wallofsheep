@@ -18,7 +18,7 @@ module.exports = function(io){
     User.orderBy({index: r.desc("id")}).run().then(function(result){
       for (var i = 0, len = result.length; i < len; i++){
         list.push(result[i]);
-        console.log(result[i]);
+        //console.log(result[i]);
       }
       res.render('index', {lists: list});
     })
