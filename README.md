@@ -133,7 +133,7 @@ Last, just do
 ╭─~/Coding/Projects/web/wallofsheep/firebase_app on master✔ using
 ╰─± firebase deploy
 ```
-After a moment, you can find your site on https://<your-project-id>.firebaseapp.com/  
+After a moment, you can find your site on https://your-project-id.firebaseapp.com
 
 **Running web implemented in express**  
 Just change directory to express_app, do the following command, do forget to run rethinkdb and sniffer.js metioned above.
