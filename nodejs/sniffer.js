@@ -320,7 +320,7 @@ function SavetoRethinkDB(beSaved) {
   }
 
   var userinfo = new User({
-    timestamp: Date(),
+    timestamp: Date.now().toString(),
     shost: beSaved.shost,
     sIP: beSaved.srcIP,
     dIP: beSaved.dstIP,
