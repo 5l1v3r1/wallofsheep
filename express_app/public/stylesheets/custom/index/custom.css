@@ -96,6 +96,8 @@
         padding: 25px;
         display: table;
         overflow-y: auto;
+        height: 500px;
+        max-height: 600px;
     }
 
     .pure-table{

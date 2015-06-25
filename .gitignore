@@ -55,3 +55,4 @@ target/
 
 # node
 node_modules/
+nodejs/rethinkdb_data/
