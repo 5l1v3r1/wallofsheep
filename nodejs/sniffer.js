@@ -133,8 +133,8 @@ function HTTPPostParser(packet) {
     var obj = {};
 
     obj.shost = shost;
-    obj.saddr = saddr;
-    obj.daddr = daddr;
+    obj.srcIP = saddr;
+    obj.dstIP = daddr;
     obj.sport = sport;
     obj.dport = dport;
     obj.user = account;
@@ -213,8 +213,8 @@ function GetFTPPOPLoginPass(packet) {
       var objWithUser = {};
 
       objWithUser.shost = shost;
-      objWithUser.saddr = saddr;
-      objWithUser.daddr = daddr;
+      objWithUser.srcIP = saddr;
+      objWithUser.dstIP = daddr;
       objWithUser.sport = sport;
       objWithUser.dport = dport;
       objWithUser.user = user[1];
@@ -231,8 +231,8 @@ function GetFTPPOPLoginPass(packet) {
       var objWithPass = {};
 
       objWithPass.shost = shost;
-      objWithPass.saddr = saddr;
-      objWithPass.daddr = daddr;
+      objWithPass.srcIP = saddr;
+      objWithPass.dstIP = daddr;
       objWithPass.sport = sport;
       objWithPass.dport = dport;
       objWithPass.user = null;
@@ -292,8 +292,8 @@ function GetIMAPLoginPass(packet) {
     var obj = {};
 
     obj.shost = shost;
-    obj.saddr = saddr;
-    obj.daddr = daddr;
+    obj.srcIP = saddr;
+    obj.dstIP = daddr;
     obj.sport = sport;
     obj.dport = dport;
     obj.user = login[1];
