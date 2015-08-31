@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Wallofsheep by John-Lin</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Wallofsheep</h1>
+        <h2>Wall of Sheep</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/John-Lin/wallofsheep/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/John-Lin/wallofsheep/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/John-Lin/wallofsheep" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="wall-of-sheep" class="anchor" href="#wall-of-sheep" aria-hidden="true"><span class="octicon octicon-link"></span></a>Wall of Sheep</h1>
+
+<pre><code> _       _____    __    __       ____  ______   _____ __  __________________
+| |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
+| | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
+
+</code></pre>
+
+<p><a href="https://gitter.im/John-Lin/wallofsheep?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/John-Lin/wallofsheep"></a></p>
+
+<p>The Wall of Sheep is dedicated to network security research and we make use of a powerful API provided by <a href="http://www.rethinkdb.com/">RethinkDB</a>, <a href="https://www.firebase.com/">Firebase</a> to store and sync data in realtime.</p>
+
+<p>Without SSL/TLS, your password is just like streaking. Therefore, we recommend that service provider in the list should secure their websites with HTTPS.</p>
+
+<p>You can check out the <a href="https://amber-inferno-5029.firebaseapp.com">demo page</a>.
+The circle symbolizes that the status of sniffer program. Green is online, otherwise offline.</p>
+
+<p>We built sniffer in two languages <code>Python</code> and <code>Node.js</code>. The <code>Node.js</code> version support on OSX and Linux. Unfortunately, The <code>Python</code> version only support on Linux.</p>
+
+<h1>
+<a id="new-implementation-in-nodejs" class="anchor" href="#new-implementation-in-nodejs" aria-hidden="true"><span class="octicon octicon-link"></span></a>New implementation in Node.js</h1>
+
+<p><strong>[April 18, 2015 Updated]</strong> Add <code>Node.js</code> sniffer implementation. Now OSX user can play with it. <img class="emoji" title=":laughing:" alt=":laughing:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f606.png" height="20" width="20" align="absmiddle"></p>
+
+<p>We believe that using JavaScript is more efficient. Please refer to <a href="https://github.com/mranney/node_pcap#why-capture-packets-in-javascript">Why capture packets in JavaScript?</a></p>
+
+<p>In simple terms</p>
+
+<ul>
+<li>Event-based.</li>
+<li>Handling binary data is fast and efficient.</li>
+<li>Good HTTP parser.</li>
+</ul>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>Here is installation method.</p>
+
+<p>Using brew install <code>Node.js</code>, <code>npm</code> and <code>rethinkdb</code> (option).</p>
+
+<pre><code>$ brew update
+$ brew install node
+$ brew install npm
+$ brew install rethinkdb
+</code></pre>
+
+<p>Clone the repo and change directory to <code>nodejs</code> folder.</p>
+
+<pre><code>$ git clone git@github.com:John-Lin/wallofsheep.git
+</code></pre>
+
+<p>Packet capturing depends on <a href="https://github.com/mranney/node_pcap">mranney/node_pcap</a> and save data to RethinkDB using <a href="https://github.com/neumino/thinky">neumino/thinky</a> (option) you can use <code>npm</code> to get these packages.</p>
+
+<pre><code>$ npm install
+</code></pre>
+
+<p>That's it.</p>
+
+<h1>
+<a id="basic-usage" class="anchor" href="#basic-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic usage</h1>
+
+<p>Two ways to use</p>
+
+<p>Not saving the credentials. Start the <code>sniffer</code> with sudo</p>
+
+<pre><code>john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
+$ sudo node sniffer.js -i en0
+[-] Loading RethinkDB module.
+  _       _____    __    __       ____  ______   _____ __  __________________
+| |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
+| | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
+[*] Using interface: en0
+[192.168.0.16:61881 -&gt; 140.***.**.***:80] Account: hello@gmail.com
+[192.168.0.16:61881 -&gt; 140.***.**.***:80] Password: thisispassword
+</code></pre>
+
+<p>Saving credentials in RethinkDB need <code>-s</code> option.</p>
+
+<p>First, start the RethinkDB server like this:</p>
+
+<pre><code>$ rethinkdb
+info: Creating directory 'rethinkdb_data'
+info: Listening for intracluster connections on port 29015
+info: Listening for client driver connections on port 28015
+info: Listening for administrative HTTP connections on port 8080
+info: Server ready
+</code></pre>
+
+<p>Second, open a new terminal and start the <code>sniffer</code> with sudo</p>
+
+<pre><code>john at JohnsMacBook-Air in ~/Repository/wallofsheep/nodejs (master●●)
+$ sudo node sniffer.js -i en0 -s
+[-] Loading RethinkDB module.
+  _       _____    __    __       ____  ______   _____ __  __________________
+| |     / /   |  / /   / /      / __ \/ ____/  / ___// / / / ____/ ____/ __ \
+| | /| / / /| | / /   / /      / / / / /_      \__ \/ /_/ / __/ / __/ / /_/ /
+| |/ |/ / ___ |/ /___/ /___   / /_/ / __/     ___/ / __  / /___/ /___/ ____/
+|__/|__/_/  |_/_____/_____/   \____/_/       /____/_/ /_/_____/_____/_/
+[*] Using interface: en0
+[192.168.0.16:61881 -&gt; 140.***.**.***:80] Account: hello@gmail.com
+[192.168.0.16:61881 -&gt; 140.***.**.***:80] Password: thisispassword
+</code></pre>
+
+<h1>
+<a id="how-to-run-web" class="anchor" href="#how-to-run-web" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to Run Web</h1>
+
+<p><strong>Deploy firebase web</strong><br>
+First, Install firebase toolkits.</p>
+
+<pre><code>╭─~/Coding/Projects/web/wallofsheep/firebase_app on master✔ using
+╰─± npm install -g firebase-tools
+</code></pre>
+
+<p>Find out the following code snippet in <strong>firebase_app/index.html</strong> and change to your own firebase's project id and create both <strong>pwd_table</strong> &amp; <strong>status</strong> table in the Firebase management panel.</p>
+
+<pre><code>var myDataRef = new Firebase('https://&lt;your-project-id&gt;.firebaseio.com/pwd_table'),
+    statusRef = new Firebase('https://&lt;your-project-id&gt;.firebaseio.com/status'),
+</code></pre>
+
+<p>Last, just do</p>
+
+<pre><code>╭─~/Coding/Projects/web/wallofsheep/firebase_app on master✔ using
+╰─± firebase deploy
+</code></pre>
+
+<p>After a moment, you can find your site on <a href="https://your-project-id.firebaseapp.com">https://your-project-id.firebaseapp.com</a></p>
+
+<p><strong>Running web implemented in express</strong><br>
+Just change directory to express_app, do the following command, do not forget to run rethinkdb and sniffer.js metioned above.</p>
+
+<pre><code>╭─~/Coding/Projects/web/wallofsheep/express_app on master✔ using
+╰─± npm install &amp; npm start
+</code></pre>
+
+<p>Now, You can wait for the comming sheep <img class="emoji" title=":smile:" alt=":smile:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f604.png" height="20" width="20" align="absmiddle"></p>
+
+<h1>
+<a id="work-in-progress" class="anchor" href="#work-in-progress" aria-hidden="true"><span class="octicon octicon-link"></span></a>Work in progress</h1>
+
+<ul>
+<li>[x] Support <a href="http://www.rethinkdb.com/">RethinkDB</a> provided push/sync data in realtime.</li>
+<li>[x] Parsing user/password in IMAP protocol.</li>
+<li>[x] Parsing user/password in POP3 protocol.</li>
+<li>[ ] A new Web interface for showing off rely on <a href="http://www.rethinkdb.com/">RethinkDB</a>.</li>
+<li>[ ] Any protocol not encrypted (e.g., telnet, irc etc.)</li>
+</ul>
+
+<h1>
+<a id="screenshot" class="anchor" href="#screenshot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshot</h1>
+
+<p><img src="/screenshot/screenshot.jpeg?raw=true" alt="wallofsheep" title="Wall of Sheep"></p>
+
+<h1>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
+
+<p>Your contribution is welcome <img class="emoji" title=":octocat:" alt=":octocat:" src="https://assets-cdn.github.com/images/icons/emoji/octocat.png" height="20" width="20" align="absmiddle"> ! follow these steps:</p>
+
+<ul>
+<li>Fork this project.</li>
+<li>Create a branch (git checkout -b my_feature_patch)</li>
+<li>Commit your changes (git commit -am "Added Something Feature")</li>
+<li>Push to the branch (git push origin my_feature_patch)</li>
+<li>Open a Pull Request</li>
+<li>Wait for merge <img class="emoji" title=":smile:" alt=":smile:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f604.png" height="20" width="20" align="absmiddle">
+</li>
+</ul>
+
+<h1>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h1>
+
+<ul>
+<li><a href="https://github.com/John-Lin">John-Lin</a></li>
+<li><a href="https://github.com/lockys">lockys</a></li>
+</ul>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
